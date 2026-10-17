@@ -1,0 +1,11 @@
+# bagimliliklar
+node_modules/
+
+# gizli bilgiler (secret'lar GitHub'a gitmesin!)
+.env
+
+# build ciktilari
+dist/
+
+# veritabani dosyasi
+*.db
