@@ -87,13 +87,14 @@ app.post('/api/login', async (req, res) => {
   res.json({ token });
 });
 
-// --- Iletisim: mesaji al + e-posta gonder ---
-const messages = [];
-
+// --- Iletisim: mesaji DB'ye kaydet + e-posta gonder ---
 app.post('/api/contact', async (req, res) => {
   const { name, message } = req.body;
-  messages.push({ name, message });
-  console.log('Yeni mesaj:', name, message);
+
+  // 1) Mesaji veritabanina yaz (kalici) — created_at otomatik dolar
+  db.prepare('INSERT INTO messages (name, message) VALUES (?, ?)')
+    .run(name, message);
+  console.log('Yeni mesaj DB\'ye kaydedildi:', name);
 
   try {
     await transporter.sendMail({
@@ -108,6 +109,14 @@ app.post('/api/contact', async (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+// --- Mesajlari listele (korumali) — en yeni ustte ---
+app.get('/api/messages', authGuard, (req, res) => {
+  const rows = db.prepare(
+    'SELECT id, name, message, created_at FROM messages ORDER BY id DESC'
+  ).all();
+  res.json(rows);
 });
 
 // --- Sunucuyu baslat ---
