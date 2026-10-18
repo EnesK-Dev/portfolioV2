@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import '../App.css'
 import ProjectsEditor from '../components/ProjectsEditor.jsx'
+import MessagesList from '../components/MessagesList.jsx'
+import GithubRepos from '../components/GithubRepos.jsx'
+import ProgressEditor from '../components/ProgressEditor.jsx'
 
 function Admin() {
   const [token, setToken] = useState(() => localStorage.getItem('token') || '')
@@ -9,7 +12,7 @@ function Admin() {
   const [error, setError] = useState('')
 
   // Duzenlenecek icerik + kaydetme durumu
-  const [content, setContent] = useState({ name: '', title: '', about: '' })
+  const [content, setContent] = useState({ name: '', title: '', about: '', github: '', linkedin: '' })
   const [saveStatus, setSaveStatus] = useState('')
 
   // Giris yapilinca mevcut icerigi cek ve formu doldur
@@ -133,11 +136,33 @@ function Admin() {
           onChange={(e) => updateField('about', e.target.value)}
         />
 
+        <label>GitHub linki</label>
+        <input
+          type="url"
+          placeholder="https://github.com/kullaniciadi"
+          value={content.github || ''}
+          onChange={(e) => updateField('github', e.target.value)}
+        />
+
+        <label>LinkedIn linki</label>
+        <input
+          type="url"
+          placeholder="https://linkedin.com/in/kullaniciadi"
+          value={content.linkedin || ''}
+          onChange={(e) => updateField('linkedin', e.target.value)}
+        />
+
         <button type="submit">İçeriği Kaydet</button>
         {saveStatus && <p className="status">{saveStatus}</p>}
       </form>
 
       <ProjectsEditor token={token} />
+
+      <ProgressEditor token={token} />
+
+      <MessagesList token={token} />
+
+      <GithubRepos token={token} />
     </div>
   )
 }

@@ -1,10 +1,44 @@
-:root {
-  color-scheme: light dark;
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Sumi & Steel brutalist temel --- */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    scroll-behavior: smooth;      /* nav linklerinde yumusak kaydirma */
+  }
+  section[id] {
+    scroll-margin-top: 4rem;      /* sticky nav altinda baslik gizlenmesin */
+  }
+  body {
+    background: #131313;        /* sumi */
+    color: #e5e2e1;            /* washi */
+    overscroll-behavior: none;
+  }
+  /* brutalist: hicbir yerde yuvarlak kose yok */
+  * {
+    border-radius: 0 !important;
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
+/* scrollbar'i gizle */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* yanip sonen durum noktasi (hero/status) */
+@keyframes pulse-fast {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.animate-pulse-fast {
+  animation: pulse-fast 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

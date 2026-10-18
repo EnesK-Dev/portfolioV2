@@ -31,6 +31,32 @@ function ProjectsEditor({ token }) {
     setProjects((prev) => prev.filter((_, i) => i !== index))
   }
 
+  // secilen gorseli yukle -> donen url'yi o projenin image alanina yaz
+  async function uploadImage(index, file) {
+    if (!file) return
+    const formData = new FormData()     // dosya tasiyan ozel kap
+    formData.append('image', file)      // backend'de upload.single('image') ile eslesir
+    setStatus('Gorsel yukleniyor...')
+    try {
+      const res = await fetch('http://localhost:3001/api/upload', {
+        method: 'POST',
+        // DIKKAT: Content-Type ELLE verilmez! FormData'da tarayici
+        // multipart sinirini kendi ekler; elle yazarsak upload bozulur.
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+      const data = await res.json()
+      if (res.ok) {
+        updateProject(index, 'image', data.url)
+        setStatus('Gorsel yuklendi.')
+      } else {
+        setStatus(data.error || 'Gorsel yuklenemedi.')
+      }
+    } catch {
+      setStatus('Gorsel yuklenemedi.')
+    }
+  }
+
   // kaydet: korumali PUT + token
   async function handleSave() {
     setStatus('Kaydediliyor...')
@@ -72,6 +98,20 @@ function ProjectsEditor({ token }) {
                 e.target.value.split(',').map((t) => t.trim()).filter(Boolean)
               )
             }
+          />
+
+          <label>Gorsel</label>
+          {p.image && (
+            <img
+              className="edit-preview"
+              src={`http://localhost:3001${p.image}`}
+              alt="onizleme"
+            />
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => uploadImage(i, e.target.files[0])}
           />
 
           <button type="button" className="danger" onClick={() => removeProject(i)}>Sil</button>

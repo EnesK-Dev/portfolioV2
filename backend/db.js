@@ -28,7 +28,42 @@ db.exec(`
     message    TEXT,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS featured_repos (
+    github_id   INTEGER PRIMARY KEY,
+    name        TEXT,
+    description TEXT,
+    url         TEXT,
+    language    TEXT,
+    stars       INTEGER
+  );
+
+  CREATE TABLE IF NOT EXISTS wip_projects (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    title    TEXT,
+    note     TEXT,
+    progress INTEGER DEFAULT 0
+  );
 `);
+
+// --- Migration: projects tablosuna 'image' sutunu ekle (yoksa) ---
+// PRAGMA table_info = tablonun sutunlarini listeler.
+const projCols = db.prepare('PRAGMA table_info(projects)').all();
+if (!projCols.some((c) => c.name === 'image')) {
+  db.exec('ALTER TABLE projects ADD COLUMN image TEXT');
+  console.log('projects tablosuna image sutunu eklendi');
+}
+
+// --- Migration: content tablosuna 'github' + 'linkedin' sutunlari (yoksa) ---
+const contentCols = db.prepare('PRAGMA table_info(content)').all();
+if (!contentCols.some((c) => c.name === 'github')) {
+  db.exec('ALTER TABLE content ADD COLUMN github TEXT');
+  console.log('content tablosuna github sutunu eklendi');
+}
+if (!contentCols.some((c) => c.name === 'linkedin')) {
+  db.exec('ALTER TABLE content ADD COLUMN linkedin TEXT');
+  console.log('content tablosuna linkedin sutunu eklendi');
+}
 
 // --- Ilk calismada JSON'dan tohumla (migrate) ---
 

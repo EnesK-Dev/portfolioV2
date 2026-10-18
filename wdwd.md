@@ -1,561 +1,600 @@
-# 📘 Portfolio — Öğrenme Günlüğü (wdwd.md)
+# 📘 Portfolio — Öğrenme Günlüğü & Başvuru Belgesi (wdwd.md)
 
-Bu dosya: bu projede **ne yaptığımızı, neyi neden yaptığımızı** adım adım anlatır.
-Amaç — sana yaptırdığım her şeyi buradan okuyup **gerçekten anlaman**; kodun arkasında durabilmen.
-Her yeni adımda bu dosya güncellenir.
+Bu dosya projenin **tam referansı**: ne yaptık, nasıl yaptık, **neden** öyle yaptık.
+Amaç — kodun arkasında durabilmen; her detayı burada, yerli yerinde bulabilmen.
+
+> **Nasıl okunur:** Önce Bölüm 1–3 (genel bakış, çalıştırma, mimari) — bütünü oturtur.
+> Sonra Bölüm 4 (özellikler, katman katman — her biri kendi içinde tam).
+> En sonda Bölüm 5 (başvuru tabloları: API, DB şeması, güvenlik, frontend haritası, kavram sözlüğü, hata günlüğü) — "şu neredeydi?" diye bakarsın.
 
 ---
 
-## 🗂️ Proje Yapısı
+# 1. Genel Bakış
+
+**Ne yapıyoruz:** Kendi içeriğini bir **admin panelinden** yönetebildiğin, full-stack bir portfolyo sitesi.
+
+**Teknoloji yığını:**
+- **Frontend:** React (Vite ile), react-router-dom. Tarayıcıda çalışır, port **5173**.
+- **Backend:** Node.js + Express. API sunar, port **3001**.
+- **Veritabanı:** SQLite (`node:sqlite`, Node yerleşik). Tek dosya: `backend/portfolio.db`.
+- **Ek servisler:** Nodemailer (Gmail SMTP), GitHub REST API, multer (dosya yükleme).
+
+**Temel kavramlar:**
+- **Frontend** = kullanıcının gördüğü/etkileştiği taraf (arayüz).
+- **Backend** = arka plandaki sunucu; veriyi, mantığı, veritabanını yönetir.
+- **API** = frontend ile backend'in konuştuğu "menü". Frontend "şu veriyi ver" der (HTTP isteği), backend cevap döner (genelde **JSON**).
+- **localhost** = kendi bilgisayarın. **port** = o bilgisayardaki bir kapı numarası. `localhost:5173` = kendi makinendeki 5173 kapısı.
+
+**Proje yapısı (güncel):**
 ```
 ~/Desktop/Portfolio/
-├── frontend/   → React (Vite). Kullanıcının tarayıcıda gördüğü arayüz.
-├── backend/    → Node + Express. Veri sunan API.
-└── wdwd.md     → bu dosya.
+├── frontend/
+│   └── src/
+│       ├── main.jsx                 → giriş noktası; <App/>'i <BrowserRouter> ile sarar
+│       ├── App.jsx                  → router (hangi URL → hangi sayfa)
+│       ├── App.css / index.css      → stiller
+│       ├── pages/
+│       │   ├── Home.jsx             → public site (herkese açık ana sayfa)
+│       │   └── Admin.jsx            → yönetim paneli (login + düzenleme)
+│       └── components/
+│           ├── ProjectsEditor.jsx   → projeleri düzenle (kapak görselli)
+│           ├── MessagesList.jsx     → gelen iletişim mesajlarını listele
+│           ├── GithubRepos.jsx      → GitHub repolarını listele + yayınlanacakları seç
+│           └── ProgressEditor.jsx   → "devam eden projeler" + ilerleme çubuğu
+├── backend/
+│   ├── server.js                    → tüm API (Express)
+│   ├── db.js                        → SQLite kurulum, tablolar, migration, tohumlama
+│   ├── portfolio.db                 → canlı veritabanı (git'e gitmez)
+│   ├── content.json / projects.json → yalnızca İLK tohum verisi
+│   ├── uploads/                     → yüklenen görseller (git'e gitmez)
+│   └── .env                         → secret'lar (git'e gitmez)
+└── wdwd.md                          → bu dosya
 ```
 
 ---
 
-## 🧩 Temel Kavramlar
-- **Frontend** = kullanıcının gördüğü/etkileştiği taraf (arayüz, tarayıcıda çalışır).
-- **Backend** = arka plandaki sunucu; veriyi, mantığı, (ileride) veritabanını yönetir.
-- **API** = frontend ile backend'in konuştuğu "menü". Frontend "şu veriyi ver" der (HTTP isteği), backend cevap döner (genelde **JSON**).
-- **localhost** = kendi bilgisayarın. **port** = o bilgisayardaki bir kapı numarası (5173, 3001...). `localhost:5173` = kendi makinendeki 5173 kapısı.
+# 2. Projeyi Çalıştırma
 
----
-
-## ✅ Adım 1 — Frontend (React + Vite)
-
-**Çalıştırdığımız komutlar:**
-```bash
-# 1) frontend/ klasörüne hazır React iskeleti kur
-npm create vite@latest frontend -- --template react
-
-# 2) paketleri indir + geliştirme sunucusunu başlat
-cd frontend && npm install && npm run dev
-```
-
-**Satır satır ne yaptı:**
-- `npm create vite@latest frontend -- --template react` → `frontend/` içine hazır bir **React** projesi (dosyalar + yapılandırma) kurdu.
-- `npm install` → `package.json`'da yazılı paketleri `node_modules/` içine indirdi.
-- `npm run dev` → **geliştirme sunucusunu** başlattı → `http://localhost:5173`.
-
-**Vite nedir?** Modern frontend geliştirme aracı. İki işi var:
-- Geliştirmede: hızlı yerel sunucu + **hot-reload** (dosyayı kaydedince tarayıcı anında güncellenir).
-- Yayına çıkarken: `npm run build` → kodu optimize edip statik dosyalara paketler.
-
-**Önemli dosya:** `frontend/src/App.jsx` → ana React bileşeni; arayüzü burada yazarız.
-
-**Dev döngüsü:** yaz → kaydet → tarayıcıda anında gör → tekrar.
-
-**Vite vs Apache:** İkisi de web sunucusu. Vite = **geliştirme** (sadece sen, canlı düzenleme). Apache = **production** (bitmiş siteyi herkese sunar). İleride `npm run build` çıktısını Apache/Nginx ile sunabilirsin. Farklı aşamalar.
-
----
-
-## ✅ Adım 2 — Backend (Node + Express) + Frontend'e Bağlama
-
-**Amaç:** Frontend'in veri çekeceği bir API yazmak ve ikisini bağlamak.
-
-### 2.1 — Backend dosyaları
-`backend/package.json` → projenin kimliği + bağımlılıklar:
-```json
-{
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.2"
-  }
-}
-```
-- **express** = Node için web sunucusu / API kütüphanesi.
-- **cors** = farklı port/origin'den gelen isteklere izin (bkz. 2.2).
-
-`backend/server.js` → API'nin kendisi:
-```js
-const express = require('express');
-const cors = require('cors');
-
-const app = express();     // uygulamayi olustur
-const PORT = 3001;         // API bu portu dinler
-
-app.use(cors());           // 5173'teki frontend'in 3001'e erisebilmesi icin
-app.use(express.json());
-
-const projects = [ /* proje verileri */ ];
-
-app.get('/api/projects', (req, res) => {
-  res.json(projects);      // istek gelince projeleri JSON olarak don
-});
-
-app.listen(PORT, () => console.log(`API ${PORT} portunda`));
-```
-Satır satır:
-- `const app = express()` → uygulamayı oluşturur.
-- `app.get('/api/projects', ...)` → bir **endpoint**: biri `GET /api/projects` isterse `res.json(projects)` ile veriyi döner.
-- `app.listen(3001)` → sunucuyu 3001 portunda başlatır.
-
-**Çalıştırma:**
-```bash
-cd backend
-npm install      # express + cors indirir (node_modules/)
-node server.js   # sunucu baslar -> "API http://localhost:3001 ..."
-```
-
-### 2.2 — CORS nedir? (önemli)
-Tarayıcı güvenlik gereği bir sayfanın **farklı origin'e** (farklı port = farklı origin) istek atmasını varsayılan **engeller.** Frontend `5173`, backend `3001` → farklı origin. `app.use(cors())` backend'e "5173'ten gelen isteklere izin ver" dedirtir. Olmazsa tarayıcı isteği **bloklar**.
-
-### 2.3 — Frontend'i API'ye bağlama (`frontend/src/App.jsx`)
-```jsx
-const [projects, setProjects] = useState([])   // veri deposu (state)
-
-useEffect(() => {                               // bilesen yuklenince 1 KEZ calis
-  fetch('http://localhost:3001/api/projects')   // API'ye istek at
-    .then(res => res.json())                    // cevabi JSON yap
-    .then(data => setProjects(data))            // state'e yaz -> arayuz guncellenir
-}, [])
-
-{projects.map(p => <article>{p.title}...</article>)}  // her projeyi karta ciz
-```
-Kavramlar:
-- **useState** → bileşenin "hafızası". `setProjects` ile değişince React arayüzü otomatik yeniden çizer.
-- **useEffect(fn, [])** → bileşen ilk geldiğinde **bir kez** çalışır (veri çekme gibi yan etkiler).
-- **fetch** → tarayıcının HTTP istek fonksiyonu.
-- **.map()** → dizideki her projeyi bir karta dönüştürür.
-
-### 2.4 — Veri akışı (tam döngü)
-```
-React (5173) --fetch--> Express API (3001) --JSON--> React --render--> ekranda kartlar
-```
-
-### 🐞 Yaşadığımız gerçek hata (öğretici!)
-Sayfa ilk açıldığında "Backend'e ulaşılamadı" dedi — çünkü **sayfa, backend tam başlamadan isteği attı.** Backend ayağa kalkınca **yenileyince** düzeldi. Ders: frontend bir API'ye bağımlıysa, o API **çalışıyor** olmalı; sıra/zamanlama önemli.
-
-### ▶️ Projeyi çalıştırma (iki sunucu, iki terminal)
+**İki sunucu, iki terminal** (ikisi aynı anda açık olmalı):
 ```bash
 # Terminal 1 — backend
 cd ~/Desktop/Portfolio/backend && node server.js
+# -> "API http://localhost:3001 uzerinde calisiyor"
 
 # Terminal 2 — frontend
 cd ~/Desktop/Portfolio/frontend && npm run dev
+# -> http://localhost:5173
 ```
-Sonra tarayıcıda `http://localhost:5173`.
+Sonra tarayıcıda `http://localhost:5173` (public), `http://localhost:5173/admin` (panel).
+
+**Kurallar / sık karşılaşılanlar:**
+- ⚠️ **Node hot-reload yapmaz.** `server.js` veya `db.js` değişince backend'i **Ctrl+C** + `node server.js` ile yeniden başlat. (Frontend/Vite ise kendini otomatik yeniler.)
+- **`EADDRINUSE :::3001`** = port 3001 zaten dolu (eski bir node düzgün kapanmamış). Çöz:
+  ```bash
+  kill $(lsof -t -i:3001)
+  ```
+- **Gerekli `.env` değişkenleri** (hepsi `backend/.env`, hepsi gizli):
+  ```
+  ADMIN_USERNAME=enes
+  ADMIN_PASSWORD_HASH=<bcrypt hash>
+  JWT_SECRET=<rastgele uzun string>
+  EMAIL_USER=<gmail adresi>
+  EMAIL_APP_PASSWORD=<16 haneli gmail app password>
+  EMAIL_TO=<mailin gideceği adres>
+  GITHUB_TOKEN=ghp_...        # opsiyonel ama önerilir (rate limit)
+  GITHUB_USERNAME=EnesK-Dev   # opsiyonel (yoksa kodda varsayılan)
+  ```
 
 ---
 
-## ✅ Adım 3 — İletişim Formu (devam ediyor)
+# 3. Mimari & Veri Akışı (büyük resim)
 
-**Amaç:** Ziyaretçi ad + mesaj yazıp gönderecek; veri backend'e gidecek.
+Bu bölümü anlarsan gerisi detaydır.
 
-### 3.1 — GET vs POST
-- **GET** = veri İSTEMEK (sunucudan al). `/api/projects` böyleydi.
-- **POST** = veri GÖNDERMEK (sunucuya yolla). Form gönderimi POST'tur.
-
-### 3.2 — Backend: mesajı alan endpoint (`backend/server.js`)
-`/api/projects` bloğunun altına eklendi:
-```js
-const messages = [];   // gelen mesajlar (simdilik bellekte)
-
-app.post('/api/contact', (req, res) => {
-  const { name, message } = req.body;        // POST govdesindeki veri
-  messages.push({ name, message });
-  console.log('Yeni mesaj:', name, message);
-  res.json({ ok: true });                    // "aldim" cevabi
-});
+## 3.1 — Üç katman ve değişmez kural
 ```
-- `app.post(...)` → **POST** endpoint (GET değil, çünkü veri **alıyoruz**).
-- `req.body` → POST ile gelen veri burada durur. `app.use(express.json())` sayesinde otomatik çözülür.
-- `res.json({ ok: true })` → frontend'e "aldım" cevabı.
-
-⚠️ **Node hot-reload yapmaz** → `server.js` değişince backend'i **Ctrl+C** + `node server.js` ile yeniden başlat.
-
-### 🐞 Hata: `EADDRINUSE: address already in use :::3001`
-Port 3001'de **zaten** bir sunucu çalışıyor demek (eski bir `node server.js` düzgün kapanmamış). Çözüm — o portu tutan süreci bul ve kapat:
-```bash
-kill $(lsof -t -i:3001)   # 3001 portunu kullanan sureci oldur
+   TARAYICI                    SUNUCU                  DOSYA
+┌─────────────┐  fetch   ┌───────────────┐  SQL   ┌──────────────┐
+│  Frontend   │ ───────► │   Backend     │ ─────► │ portfolio.db │ ◄── canlı veri
+│ (React/5173)│ ◄─────── │ (Express/3001)│ ◄───── │   (SQLite)   │
+└─────────────┘  JSON    └───────────────┘  satır └──────────────┘
+                                                         ▲
+                                                         │ sadece İLK kurulumda
+                                                   ┌─────┴──────┐
+                                                   │  *.json    │ ◄── tohum (bir kez)
+                                                   └────────────┘
 ```
-Sonra `node server.js`'i tekrar çalıştır. (Node'u hep **Ctrl+C** ile düzgün kapatırsan bu hata olmaz.)
+**Üç temel kural:**
+1. **Frontend veriyi hep API'den çeker** (`fetch` → backend), asla dosyadan/DB'den doğrudan değil.
+2. **Backend tek yetkili** — DB'ye okuyan/yazan yalnızca o. (Frontend tarayıcıda çalışır; DB'ye doğrudan erişseydi herkes her şeyi değiştirebilirdi → güvenlik.)
+3. **JSON = fabrika ayarı, DB = canlı veri.** Editleme hep DB'de.
 
-### 3.3 — Frontend: iletişim formu (`frontend/src/App.jsx`)
-
-**Yeni state'ler:**
-```jsx
-const [name, setName] = useState('')       // Adin input degeri
-const [message, setMessage] = useState('') // Mesajin input degeri
-const [status, setStatus] = useState('')   // gonderim durumu
+## 3.2 — Veri modelinin evrimi (nereden nereye)
+Proje boyunca veri 3 aşamadan geçti — bilmen önemli, çünkü kodda ikisinin de izi var:
 ```
+1) Kodda sabit dizi   →  2) JSON dosyası       →  3) SQLite (şu an)
+   (server.js içinde)     (content/projects.json)   (portfolio.db)
+```
+- **Neden kod yetmedi?** Çalışan program kendi `.js` kaynağını yazamaz; panelden kaydettiğin veri bir yere **yazılabilmeli**.
+- **Neden JSON yetmedi?** Tek kayıt bulmak, aynı anda yazmak, listeler büyüyünce yönetmek zor. SQL bunları hallediyor.
+- **JSON dosyalarının bugünkü tek görevi:** DB **ilk kez** oluşurken tabloları **bir kerelik tohumlamak** (seed). O iş bitince sistem JSON'a ne bakar ne yazar.
 
-**Form (JSX):**
-```jsx
-<form className="contact" onSubmit={handleSubmit}>
-  <input
-    value={name}                               // input'un degeri = state
-    onChange={(e) => setName(e.target.value)}  // yazinca state'i guncelle
-    required
-  />
-  <textarea value={message} onChange={(e) => setMessage(e.target.value)} required />
-  <button type="submit">Gönder</button>
-</form>
+**`db.js` ne zaman çalışır?** `portfolio.db` yalnızca `node server.js` ilk kez `db.js`'i yükleyince oluşur (`backend/portfolio.db`). İçinde tablolar kurulur; tablo boşsa JSON'dan tohumlanır.
+
+**Deney (öğretici):** `backend/portfolio.db`'yi silip (`rm portfolio.db`) backend'i yeniden başlatırsan → DB sıfırdan oluşur → JSON'lardan tekrar tohumlanır → panelden yaptığın değişiklikler gider (onlar DB'deydi). `.db` zaten `.gitignore`'da, silmek güvenli.
+> **Not:** `portfolio.db` **ikili (binary)** dosya — metin editörüyle açma. İçine bakmak için `sqlite3` komutu ya da kod üzerinden `SELECT`.
+
+## 3.3 — OKUMA akışı (site açıldığında)
+```
+1. Home.jsx açılır → fetch('http://localhost:3001/api/content')
+2. server.js → app.get('/api/content') → db.prepare('SELECT ... WHERE id=1').get()
+3. SQLite veriyi döndürür
+4. Backend res.json(content) → frontend
+5. Frontend ekrana basar
 ```
 
-**Gönderme fonksiyonu:**
-```jsx
-async function handleSubmit(e) {
-  e.preventDefault()                          // sayfa yeniden yuklenmesini engelle
-  const res = await fetch('http://localhost:3001/api/contact', {
-    method: 'POST',                                   // veri GONDER
-    headers: { 'Content-Type': 'application/json' },  // govde JSON
-    body: JSON.stringify({ name, message }),          // objeyi JSON metnine cevir
-  })
-  const data = await res.json()
-  if (data.ok) { setStatus('Gonderildi!'); setName(''); setMessage('') }
-}
+## 3.4 — YAZMA akışı (admin'den "Kaydet")
+```
+1. Admin.jsx → fetch(PUT, headers:{Authorization:'Bearer <token>'}, body: JSON)
+2. server.js → app.put('/api/content', authGuard, ...)
+     └ authGuard: token geçerli mi? değilse 401 DUR, geçerliyse next()
+3. db.prepare('UPDATE content SET ... WHERE id=1').run(...)  → DB güncellendi
+4. res.json({ ok:true }) → frontend "tamam"
 ```
 
-**Yeni kavramlar:**
-- **Controlled input:** `value={name}` + `onChange`. Input'un değeri state'tir; yazınca state güncellenir, state de input'u sürer. React input'u "kontrol eder". React'in temel form kalıbı.
-- **`onSubmit` + `e.preventDefault()`:** Form varsayılan olarak gönderilince **sayfayı yeniler** (eski web davranışı). `preventDefault` bunu durdurur, biz JS ile hallederiz.
-- **fetch ile POST:** `method: 'POST'`, `headers` (Content-Type: application/json), `body: JSON.stringify(...)`. GET'te sadece okuyorduk; POST'ta **veri gönderiyoruz**.
-- **`async/await`:** `.then()` zinciri yerine daha okunur yol. `await`, cevabı bekler.
-
-**Tam döngü:**
-```
-Form (5173) --POST--> /api/contact (3001) --console.log + {ok:true}--> Form "Gonderildi!"
-```
+## 3.5 — Routing (react-router-dom)
+React tek sayfadır; farklı "sayfalar" için router kullanılır.
+- `main.jsx`: `<App/>`'i `<BrowserRouter>` ile sarar (URL'yi dinler).
+- `App.jsx`:
+  ```jsx
+  <Routes>
+    <Route path="/" element={<Home />} />
+    <Route path="/admin" element={<Admin />} />
+  </Routes>
+  ```
+- Mantık: URL `/admin` olunca React `<Admin/>`'i gösterir, sayfa yenilemeden.
 
 ---
 
-## 🔜 Adım 4 — Admin Panel (devam ediyor)
+# 4. Özellikler — Katman Katman
 
-**Amaç:** Her içerik bloğunu (isim, başlık, hakkımda...) panelden **düzenleyebilmek.** Panel **kullanıcı adı + şifre** istesin, güvenli olsun.
+Her alt bölüm kendi içinde tamdır: backend + DB + frontend + varsa güvenlik.
 
-**Yol haritası:**
-1. **4.1** İçeriği `content.json`'a taşı → site oradan okusun. *(bitti)*
-2. **4.2** Admin girişi → şifre **bcrypt** ile hash'li; giriş olunca **JWT token**.
-3. **4.3** Düzenleme ucunu **koru** → sadece token'ı olan düzenlesin (auth middleware).
-4. **4.4** Admin sayfası → login + düzenleme formu.
+## 4.1 — İçerik (isim / başlık / hakkımda / sosyal linkler)
 
-**Güvenlik ilkeleri:**
-- Şifre **asla düz metin değil** → **bcrypt hash** (tek yönlü).
-- Her istekte şifre gönderme → login sonrası **JWT token**.
-- Düzenleme uçlarını **token ile koru**.
-- Gizli anahtarları koda gömme → **.env**.
-- *(Production'da dahası: HTTPS, login rate-limit, httpOnly cookie.)*
+**Ne:** Ana sayfadaki metinler + GitHub/LinkedIn linkleri, panelden düzenlenir.
 
-### 4.1 — İçeriği `content.json`'a taşı
-`backend/content.json` → düzenlenebilir içerik:
-```json
-{ "name": "Enes", "title": "Developer & Cyber Security", "about": "..." }
-```
-`backend/server.js` → dosyayı okuyup döndüren endpoint:
+**DB:** `content` tablosu, **tek satır** (`id=1`): `name, title, about, github, linkedin`.
+
+**Backend:**
 ```js
-const fs = require('fs');
-const path = require('path');
-const CONTENT_FILE = path.join(__dirname, 'content.json');
-
 app.get('/api/content', (req, res) => {
-  const content = JSON.parse(fs.readFileSync(CONTENT_FILE, 'utf-8'));
+  const content = db.prepare('SELECT name, title, about, github, linkedin FROM content WHERE id = 1').get();
   res.json(content);
 });
+app.put('/api/content', authGuard, (req, res) => {       // korumalı
+  const { name, title, about, github, linkedin } = req.body;
+  db.prepare('UPDATE content SET name=?, title=?, about=?, github=?, linkedin=? WHERE id=1')
+    .run(name, title, about, github || null, linkedin || null);
+  res.json({ ok: true });
+});
 ```
-- `fs.readFileSync(...)` → dosyayı metin olarak okur (`fs` = Node'un dosya modülü).
-- `JSON.parse(...)` → metni JS objesine çevirir.
-- `__dirname` → server.js'in bulunduğu klasör (yolu güvenli kurar).
 
-`frontend/src/App.jsx` → içeriği çekip başlıkta kullan:
-```jsx
-const [content, setContent] = useState(null)
-useEffect(() => { fetch('.../api/content').then(r => r.json()).then(setContent) }, [])
-// ...
-<h1>{content?.name}</h1>
-<p>{content?.title}</p>
-```
-- `content?.name` → **optional chaining**: `content` henüz `null` iken (veri gelmeden) çökmeyi önler, `undefined` döner.
+**Frontend (`Admin.jsx`):** controlled input'lar (name/title/about/github/linkedin). Giriş yapılınca `useEffect(..., [token])` ile mevcut içerik çekilip forma yüklenir. Kaydet → `PUT /api/content` (token'lı). Link input'ları `value={content.github || ''}` (DB null gelirse input bozulmasın).
 
-#### 💡 Neden `content.json` dosyası, `projects` neden kodda?
-Fark **yazılabilirlik**:
-| Veri | Nerede | Çalışırken değişir mi? |
-|---|---|---|
-| `projects` | projects.json (veri dosyası) | **Evet** — panel/GitHub'dan doldurulabilir |
-| `content` | content.json (veri dosyası) | **Evet** — panel kaydedecek |
-| `messages` | bellekte dizi | Değişir ama **kalıcı değil** (restart'ta gider) |
+**Frontend (`Home.jsx`):** `<h1>{content?.name}</h1>`, `{content?.about && ...}`, header'da `{content?.github && <a target="_blank" rel="noreferrer">GitHub</a>}` (sadece doluysa gösterilir).
 
-İlke: yalnızca **okunan** veri kodda durabilir; programın **yazıp kaydetmesi** ve restart'ta kaybolmaması gereken veri ayrı bir **dosyaya/veritabanına** gider. (Çalışan program `.json`'u yazabilir ama kendi `.js` kaynağını yazamaz.)
+**Geçmiş (neden böyle):** İçerik önce `server.js`'te sabitti → sonra `content.json`'a taşındı (yazılabilir olsun) → sonunda SQLite'a. GitHub/LinkedIn sütunları sonradan **migration** ile eklendi (bkz. 5.2 DB şeması / migration mantığı).
 
-**Yaptık:** `projects` artık `backend/projects.json`'da (content ile tutarlı). `server.js` içindeki sabit dizi kaldırıldı; endpoint dosyadan okuyor:
+## 4.2 — Projeler (manuel, kapak görselli)
+
+**Ne:** Elle girdiğin projeler; başlık, açıklama, teknoloji etiketleri, kapak görseli.
+
+**DB:** `projects` tablosu: `id (AUTOINCREMENT), title, description, tech, image`.
+- **`tech`** SQL'de dizi tutamaz → `JSON.stringify` ile **metin** saklanır, okunurken `JSON.parse`.
+- **`desc` → `description`:** `desc` SQL'de ayrılmış kelime (sıralama); sütun adı `description`, API'de `desc` olarak eşlenir (`r.description → desc`).
+- **`image`** sonradan migration ile eklendi; görselin yolu (`/uploads/..`) ya da null.
+
+**Backend:**
 ```js
-const PROJECTS_FILE = path.join(__dirname, 'projects.json');
 app.get('/api/projects', (req, res) => {
-  const projects = JSON.parse(fs.readFileSync(PROJECTS_FILE, 'utf-8'));
-  res.json(projects);
+  const rows = db.prepare('SELECT id, title, description, tech, image FROM projects').all();
+  res.json(rows.map(r => ({ id:r.id, title:r.title, desc:r.description, tech:JSON.parse(r.tech), image:r.image })));
+});
+app.put('/api/projects', authGuard, (req, res) => {       // korumalı; hepsini sil + yeniden ekle
+  db.exec('DELETE FROM projects');
+  const insert = db.prepare('INSERT INTO projects (title, description, tech, image) VALUES (?, ?, ?, ?)');
+  for (const p of req.body) insert.run(p.title, p.desc, JSON.stringify(p.tech), p.image || null);
+  res.json({ ok: true });
 });
 ```
-İleride: projeler GitHub reposundan çekilip seçilenler buraya yazılabilir.
+> **"Hepsini sil + yeniden ekle" deseni:** Tüm listeyi tek seferde kaydetmenin basit yolu. Küçük listelerde sorun değil; büyüse tek tek UPDATE/DELETE'e geçilir.
 
-### 4.2 — Admin girişi (auth) — devam ediyor
+**Frontend (`ProjectsEditor.jsx`):** dizi-CRUD, hep **immutable**:
+```jsx
+prev.map((p,i) => i===index ? {...p,[key]:value} : p)   // güncelle
+prev.filter((_,i) => i!==index)                          // sil
+[...prev, { id:newId, title:'', desc:'', tech:[] }]      // ekle
+```
+- **tech:** formda `p.tech.join(', ')` ile virgüllü metin; kaydederken `value.split(',').map(t=>t.trim()).filter(Boolean)` ile tekrar dizi.
+- **Kapak görseli:** bkz. 4.6 (multer).
 
-**4.2a — Gizli bilgiler (.env) + şifre hash'i**
-- Admin bilgileri ve gizli anahtar **koda değil**, `backend/.env`'e konur (git'e gitmez):
-```
-ADMIN_USERNAME=enes
-ADMIN_PASSWORD_HASH=<bcrypt hash>
-JWT_SECRET=<rastgele uzun string>
-```
-- **`.env`** = ortam değişkenleri (environment variables) dosyası. Gizli/ortama özel ayarlar burada; `dotenv` paketi bunları `process.env`'e yükler.
-- **`.gitignore`** → `.env` ve `node_modules/` git'e **gönderilmez** (secret'lar GitHub'a sızmasın).
-- **Şifre hash'i** — parolayı düz değil, bcryptjs ile hash'li saklarız:
-```bash
-node -e "console.log(require('bcryptjs').hashSync('sifren', 10))"
-```
-→ `$2b$10$...` çıkar (Wazuh'taki `$6$...` gibi: tek yönlü + salt'lı + kasıtlı yavaş). `10` = cost (round sayısı; yüksek = daha yavaş = kırması daha zor).
+**Frontend (`Home.jsx`):** her proje bir kart; `{p.image && <img className="card-img" src={`http://localhost:3001${p.image}`} />}` + başlık + açıklama + tech etiketleri.
 
-**4.2b — Login endpoint (`POST /api/login`)**
+## 4.3 — İletişim formu (+ e-posta + DB kaydı)
+
+**Ne:** Ziyaretçi ad + mesaj yazar → mesaj hem **DB'ye kaydedilir** (kalıcı) hem **mailine düşer** → admin panelinde listelenir.
+
+**GET vs POST:** GET = veri İSTEMEK (al). POST = veri GÖNDERMEK (yolla). Form gönderimi POST.
+
+**DB:** `messages` tablosu: `id (AUTOINCREMENT), name, message, created_at TEXT DEFAULT (datetime('now'))`.
+- `created_at`'i **biz göndermeyiz**; SQLite otomatik doldurur.
+
+**Backend:**
 ```js
-require('dotenv').config();              // .env -> process.env (EN USTTE)
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
-app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  if (username !== process.env.ADMIN_USERNAME)
-    return res.status(401).json({ error: 'hatali' });
-  const ok = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
-  if (!ok) return res.status(401).json({ error: 'hatali' });
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '2h' });
-  res.json({ token });
-});
-```
-- `require('dotenv').config()` → `.env`'i `process.env`'e yükler (en üstte, kullanmadan önce).
-- `bcrypt.compare(girilen, hash)` → hash **çözülmez**; girilen şifre aynı salt'la hash'lenip karşılaştırılır → `true/false`. (Login = kullanıcı tahmini verir, biz hash'leyip karşılaştırırız — Wazuh'taki "kırma" mantığının meşru hali.)
-- Kullanıcı adı + şifre için **aynı hata mesajı** → hangisi yanlış belli olmasın (username enumeration'ı önler).
-- `res.status(401)` → HTTP durum kodu. 200=ok, 401=yetkisiz, 404=bulunamadı, 500=sunucu hatası.
-- `jwt.sign(payload, secret, opts)` → **imzalı token** üretir. Payload = token içi bilgi; secret ile imzalanır (sahtesi üretilemez); `expiresIn` = geçerlilik süresi.
-
-**JWT nedir:** `header.payload.signature` yapısında bir metin. İmza (JWT_SECRET ile) gerçekliğini kanıtlar. İstemci token'ı saklar, sonraki isteklerde gönderir; sunucu imzayı doğrulayıp güvenir. **Stateless** — sunucu oturum tutmaz.
-
-**Test (curl):**
-```bash
-curl -X POST localhost:3001/api/login -H "Content-Type: application/json" -d '{"username":"enes","password":"SIFREN"}'
-# dogru -> {"token":"eyJ..."}   /   yanlis -> {"error":"..."}
-```
-`-X`=method, `-H`=header, `-d`=gövde (data).
-
-**4.3 — Düzenleme ucunu koru (middleware) + içeriği güncelle**
-```js
-// Guard: token'i dogrula
-function authGuard(req, res, next) {
-  const token = (req.headers.authorization || '').split(' ')[1];  // "Bearer <token>"
-  if (!token) return res.status(401).json({ error: 'Token gerekli' });
+// mesajı al: DB'ye yaz + mail gönder
+app.post('/api/contact', async (req, res) => {
+  const { name, message } = req.body;
+  db.prepare('INSERT INTO messages (name, message) VALUES (?, ?)').run(name, message); // kalıcı
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);  // imza + sure OK mi?
-    next();                                                 // devam
-  } catch {
-    return res.status(401).json({ error: 'Gecersiz token' });
-  }
-}
-
-// Icerigi GUNCELLE (korumali)
-app.put('/api/content', authGuard, (req, res) => {
-  fs.writeFileSync(CONTENT_FILE, JSON.stringify(req.body, null, 2));  // dosyaya YAZ
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER, to: process.env.EMAIL_TO,
+      subject: `Portfolyo - Yeni mesaj: ${name}`, text: `Gonderen: ${name}\n\n${message}`,
+    });
+  } catch (err) { console.error('Mail gonderilemedi:', err.message); }  // mail başarısız olsa da form başarılı döner
   res.json({ ok: true });
 });
-```
-- **Middleware (guard):** `(req, res, next)` imzalı fonksiyon; endpoint'ten **önce** çalışır. Ya `next()` (geç) ya da cevap döner (engelle). `app.put('/yol', authGuard, handler)` → sadece bu route korunur.
-- **Authorization header:** İstemci token'ı `Authorization: Bearer <token>` başlığında gönderir; biz ayıklarız.
-- **`jwt.verify(token, secret)`** → imzayı ve süreyi kontrol eder. Bozuk/süresi geçmiş → hata (catch → 401). Geçerli → payload döner. Oturum tutmadan **güven** böyle kurulur.
-- **Authentication vs Authorization:** Login = *kimsin* (authentication). Guard = *yetkin var mı* (authorization).
-- **`fs.writeFileSync(dosya, JSON.stringify(obj, null, 2))`** → objeyi JSON metnine çevirip dosyaya **YAZAR** (`null, 2` = 2 boşluk girintili). İşte content.json'u dosya yapmamızın sebebi: panel bunu **gerçekten güncelliyor.**
-- **HTTP metodları (REST):** GET=oku, POST=oluştur, **PUT=güncelle**, DELETE=sil.
-
-**Test (curl):**
-```bash
-# token YOK -> 401
-curl -X PUT localhost:3001/api/content -H "Content-Type: application/json" -d '{"name":"Enes","title":"Test"}'
-# token ILE -> guncellenir
-curl -X PUT localhost:3001/api/content -H "Content-Type: application/json" -H "Authorization: Bearer <TOKEN>" -d '{"name":"Enes","title":"Full-Stack Dev","about":"..."}'
-```
-
----
-
-## 📎 Referans — async / await
-- **Sorun:** JS tek thread'li; uzun işler (ağ, dosya, DB) senkron yapılırsa program donar.
-- **Asenkron:** işi başlat, hattı boşalt, bitince devam et. (Kafede sipariş verip kenara çekilmek gibi.)
-- **Promise:** "gelecekteki değerin sözü" → pending → fulfilled / rejected. `fetch`, `sendMail` promise döner.
-- **async/await:** promise'leri senkron gibi yazma şekeri.
-  ```js
-  // then:  fetch(url).then(r=>r.json()).then(d=>...)
-  // await: const r = await fetch(url); const d = await r.json()
-  ```
-- `await p` → p çözülene kadar **bu fonksiyonu** beklet (programı DEĞİL). Sadece `async` fonksiyon içinde.
-- Hata: promise reject → `await` fırlatır → `try/catch` ile yakala.
-
----
-
-## 📎 Referans — `server.js` anahtar kavramları (JS biliyorsan bunlar yeni)
-- `require('x')` → Node'un modül içe aktarması (`import` gibi, CommonJS tarzı).
-- `fs`, `path` → Node **yerleşik** modülleri; `express`, `cors` → npm paketleri (`node_modules/`).
-- `const app = express()` → sunucu objesi; her şeyi `app` üzerinden yaparsın.
-- `app.use(fn)` → **middleware**: her istekte, route'tan **önce** çalışır (cors, express.json).
-- `__dirname` → bu dosyanın klasörü. `path.join(...)` → güvenli yol birleştirme.
-- `app.get/post('/yol', (req, res) => {})` → **route**. `req` = gelen istek, `res` = gönderilecek cevap.
-- `req.body` → POST ile gelen veri (express.json doldurur). `res.json(x)` → cevabı JSON yolla.
-- `fs.readFileSync(dosya, 'utf-8')` → dosyayı metin oku. `JSON.parse` → metin→obje, `JSON.stringify` → obje→metin.
-- `console.log(...)` → **sunucu terminaline** yazar (tarayıcıya değil).
-- `app.listen(PORT, cb)` → sunucuyu başlat, portu dinle.
-- **Lifecycle (event-driven):** kod başta **bir kez** çalışır (kur + BEKLE); route fonksiyonları **sonra**, her istek geldiğinde tetiklenir.
-
----
-
-### 4.4 — Admin sayfası (frontend)
-
-**4.4a — Routing (react-router-dom)**
-React tek sayfadır; farklı "sayfalar" (`/`, `/admin`) için **react-router** kullanılır.
-```bash
-npm install react-router-dom
-```
-- `main.jsx`: `<App/>`'i `<BrowserRouter>` ile sarar → URL'yi dinler.
-- `App.jsx`: artık **router** —
-```jsx
-<Routes>
-  <Route path="/" element={<Home />} />
-  <Route path="/admin" element={<Admin />} />
-</Routes>
-```
-- Yeni yapı: `src/pages/Home.jsx` (eski App içeriği), `src/pages/Admin.jsx` (panel).
-- Mantık: URL `/admin` olunca React `<Admin/>`'i gösterir, sayfa yenilemeden. `<Route path="x" element={<Y/>}/>` = "x adresi → Y bileşeni".
-
-**4.4b — Login formu (`Admin.jsx`)**
-```jsx
-const [token, setToken] = useState(() => localStorage.getItem('token') || '')
-
-async function handleLogin(e) {
-  e.preventDefault()
-  const res = await fetch('.../api/login', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
-  })
-  const data = await res.json()
-  if (data.token) { localStorage.setItem('token', data.token); setToken(data.token) }
-}
-
-if (!token) return <LoginFormu/>   // giris yapilmadi
-return <Panel/>                    // giris yapildi
-```
-- **localStorage** → tarayıcı deposu; sayfa yenilense de **kalır**. Token'ı burada saklarız → yenileyince giriş düşmez. `setItem / getItem / removeItem`.
-- **Koşullu render:** aynı bileşen, `token` state'ine göre ya login formu ya panel gösterir.
-- `useState(() => localStorage.getItem('token') || '')` → ilk render'da token'ı depodan oku (lazy initial state).
-- `type="password"` → şifreyi gizler.
-- **Çıkış:** `localStorage.removeItem('token')` + `setToken('')`.
-- *(Güvenlik notu: JWT'yi localStorage'da tutmak yaygın ama XSS'e açık; production'da httpOnly cookie daha güvenli.)*
-
-**4.4c — Düzenleme formu (`Admin.jsx`) — PANEL TAMAM**
-```jsx
-const [content, setContent] = useState({ name:'', title:'', about:'' })
-
-// giris yapilinca mevcut icerigi forma yukle
-useEffect(() => { if (token) fetch('.../api/content').then(r=>r.json()).then(setContent) }, [token])
-
-// bir alani immutable guncelle
-function updateField(key, value) { setContent(prev => ({ ...prev, [key]: value })) }
-
-// korumali kaydet
-async function handleSave(e) {
-  e.preventDefault()
-  await fetch('.../api/content', {
-    method: 'PUT',
-    headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` },
-    body: JSON.stringify(content),
-  })
-}
-```
-- **İçeriği forma yükle:** `useEffect(..., [token])` → giriş yapılınca (token değişince) GET ile mevcut içeriği çekip forma koyar.
-- **Obje state'i immutable güncelle:** `setContent(prev => ({ ...prev, [key]: value }))` → eskisini kopyala (`...prev`), sadece `[key]` alanını değiştir. React state'i doğrudan değiştirmeyiz, hep **yeni obje** veririz. (`[key]` = computed property — değişkenin değerini anahtar yapar.)
-- **Korumalı kaydet:** PUT'a `Authorization: Bearer ${token}` başlığı eklenir → backend'deki `authGuard` doğrular. 401 → token geçersiz → tekrar giriş.
-
-**🎯 Tam döngü kapandı:** login → token → formu doldur → düzenle → kaydet (PUT + token) → backend `authGuard` doğrular → `content.json` yazılır → ana site güncellenir. **Admin panel bitti.**
-
-### 4.5 — Projeleri de panelden düzenle
-Backend — content ile **aynı desen**, korumalı PUT:
-```js
-app.put('/api/projects', authGuard, (req, res) => {
-  fs.writeFileSync(PROJECTS_FILE, JSON.stringify(req.body, null, 2));
-  res.json({ ok: true });
+// mesajları listele (korumalı) — en yeni üstte
+app.get('/api/messages', authGuard, (req, res) => {
+  res.json(db.prepare('SELECT id, name, message, created_at FROM messages ORDER BY id DESC').all());
 });
 ```
-Frontend — `components/ProjectsEditor.jsx` (Admin'e `token` **prop**'uyla gömülü). Yeni kavram: **dizi (array) düzenleme** — hep immutable:
-```jsx
-// guncelle (map)
-prev.map((p, i) => i === index ? { ...p, [key]: value } : p)
-// sil (filter)
-prev.filter((_, i) => i !== index)
-// ekle (spread)
-[...prev, { id: newId, title:'', desc:'', tech:[] }]
-```
-- Dizi state'ini de orijinali bozmadan güncelleriz: `map` (değiştir), `filter` (sil), `[...prev, yeni]` (ekle).
-- **tech** bir dizi; formda `p.tech.join(', ')` ile virgüllü metin gösterilir, kaydederken `value.split(',').map(t=>t.trim())` ile tekrar diziye çevrilir.
-- **Props:** `<ProjectsEditor token={token} />` → üst bileşenden alt bileşene veri geçirme. Alt bileşen `function ProjectsEditor({ token })` ile alır. (Bileşen kompozisyonu.)
-
-**🐞 Yaşadığımız hata (öğretici):** İçerik + projeler için **iki ayrı "Kaydet"** butonu vardı; içerik değişip projelerin butonuna basınca içerik kaydolmadı (`content.json` eski kaldı, `projects.json` değişti). Ders 1: **her form kendi verisini kaydeder**, buton etiketleri net olmalı ("İçeriği Kaydet" / "Projeleri Kaydet"). Ders 2: **sakladığın her alanı ekranda da göster** — `about`'u saklıyorduk ama Home'da basmıyorduk, o yüzden "değişmiyor" sanıldı. Eklenince görünür oldu.
-
----
-
-### 4.6 — İletişim mesajını e-posta ile gönder (Nodemailer)
+**E-posta (Nodemailer):**
 ```js
-const nodemailer = require('nodemailer');
-
-// SMTP baglantisi (Gmail + app password)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_APP_PASSWORD },
 });
+```
+- **SMTP** = e-posta gönderme protokolü. **App Password** = Gmail'in dış uygulamalara verdiği 16 haneli özel şifre (2FA şart; normal şifre kullanılmaz).
+- **try/catch mantığı:** mail "olursa iyi"; başarısız olsa bile form akışını bozmamalı.
 
-app.post('/api/contact', async (req, res) => {
-  const { name, message } = req.body;
+**Frontend (`Home.jsx`):** controlled input'lar (name/message), `onSubmit` + `e.preventDefault()` (form sayfa yenilemesini durdur), `fetch` POST ile JSON gövde. Başarılıysa alanları temizle + "Gönderildi!".
+
+**Frontend (`MessagesList.jsx`):** `token` prop'u + açılışta `GET /api/messages` (Bearer token) → `messages.map(...)` kart kart. `res.ok` değilse hata.
+
+**Mimari ders:** `GET /api/content` **public** (herkes okur), `GET /api/messages` **korumalı**. Aynı DB, farklı **yetki** → "bu veriyi kim görmeli?" sorusuna göre `authGuard` eklenir.
+
+## 4.4 — Admin paneli & kimlik doğrulama (auth) 🔐
+
+Projenin güvenlik kalbi. **Problem:** Paneli sadece sen kullanabilmelisin; ama HTTP **stateless** (her istek bağımsız, sunucu seni hatırlamaz) — her istekte "zaten giriş yaptım"ı nasıl kanıtlarsın?
+
+**1) Şifre düz saklanmaz → bcrypt hash (`.env`'de)**
+```bash
+node -e "console.log(require('bcryptjs').hashSync('sifren', 10))"   # $2b$10$... üretir
+```
+- bcrypt = tek yönlü + salt'lı + kasıtlı yavaş hash. `10` = cost (yüksek = kırması zor).
+- **Engellenen saldırı:** `.env`/DB sızsa bile hash'ten şifre çıkmaz; yavaşlık + salt **brute-force** ve **rainbow table**'ı etkisiz kılar.
+
+**2) Login (`POST /api/login`)**
+```js
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (username !== process.env.ADMIN_USERNAME)
+    return res.status(401).json({ error: 'Kullanici adi veya sifre hatali' });
+  const ok = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
+  if (!ok) return res.status(401).json({ error: 'Kullanici adi veya sifre hatali' });
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '2h' });
+  res.json({ token });
+});
+```
+- `bcrypt.compare(girilen, hash)` → girilen şifre aynı salt'la hash'lenip karşılaştırılır (hash çözülmez) → true/false.
+- **Aynı hata mesajı** (yanlış kullanıcı adında da şifrede de) → **user enumeration** engeli (hangi username'in var olduğu belli olmaz).
+- `jwt.sign(payload, secret, {expiresIn})` → **imzalı token**: içinde "bu enes, 2 saat geçerli".
+
+**3) JWT nedir:** `header.payload.signature` yapısında metin. İmza (JWT_SECRET ile) gerçekliği kanıtlar — secret'ı bilmeden token **üretilemez/değiştirilemez** (tampering engeli). İstemci saklar, sonraki isteklerde gönderir; sunucu imzayı doğrular. **Stateless** (sunucu oturum tutmaz). `expiresIn:'2h'` → çalınsa bile 2 saatte ölür.
+
+**4) authGuard (middleware / bekçi)**
+```js
+function authGuard(req, res, next) {
+  const token = (req.headers.authorization || '').split(' ')[1];  // "Bearer <token>"
+  if (!token) return res.status(401).json({ error: 'Token gerekli' });
+  try { req.user = jwt.verify(token, process.env.JWT_SECRET); next(); }  // imza+süre OK → devam
+  catch { return res.status(401).json({ error: 'Gecersiz veya suresi dolmus token' }); }
+}
+```
+- **Middleware** = endpoint'ten **önce** çalışan `(req,res,next)` fonksiyonu. Ya `next()` (geç) ya cevap döner (engelle).
+- `app.put('/yol', authGuard, handler)` → sadece bu route korunur.
+- **Engellenen saldırı: Broken Access Control (OWASP #1)** — biri `curl` ile direkt PUT atsa token olmadan 401 yer.
+- **Authentication vs Authorization:** login = *kimsin* (authn). guard = *yetkin var mı* (authz).
+
+**5) Frontend (`Admin.jsx`)**
+```jsx
+const [token, setToken] = useState(() => localStorage.getItem('token') || '')  // lazy initial state
+// login başarılıysa: localStorage.setItem('token', data.token); setToken(data.token)
+if (!token) return <LoginFormu/>   // koşullu render
+return <Panel/>
+```
+- **localStorage** → tarayıcı deposu; sayfa yenilense de kalır → token'ı burada tutarız, giriş düşmez. (`setItem/getItem/removeItem`.)
+- **Çıkış:** `localStorage.removeItem('token')` + `setToken('')`.
+- ⚠️ **Dürüst zayıflık:** JWT'yi localStorage'da tutmak **XSS**'e açık; production'da `httpOnly cookie` daha güvenli. (Mülakatta bunu *kendin* söylersen artı.)
+
+**Korumalı tüm uçlar:** `PUT /api/content`, `PUT /api/projects`, `GET /api/messages`, `POST /api/upload`, `PUT /api/github/featured`, `PUT /api/wip`.
+
+## 4.5 — GitHub entegrasyonu
+
+**Ne:** Repolarını GitHub'dan çek, admin'den hangilerini **yayınlayacağını seç**, public site'ta göster.
+
+**Tasarım kararı — neden backend üzerinden?** Frontend doğrudan GitHub'ı çağırsaydı `GITHUB_TOKEN` tarayıcıya sızardı (frontend kodu %100 public). Backend'den gidince **token `.env`'de gizli** kalır. Ayrıca düzen (frontend hep tek yere konuşur) + rate limit/cache yönetimi. → **Frontend → bizim backend → GitHub.**
+
+**(a) Repoları çekme — `GET /api/github/repos` (public):**
+```js
+const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'EnesK-Dev';
+app.get('/api/github/repos', async (req, res) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_TO,
-      subject: `Yeni mesaj: ${name}`,
-      text: `Gonderen: ${name}\n\n${message}`,
-    });
-  } catch (err) { console.error(err.message); }
+    const headers = { 'User-Agent': 'portfolio-app', Accept: 'application/vnd.github+json' };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const ghRes = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`, { headers });
+    if (!ghRes.ok) throw new Error('GitHub API durumu: ' + ghRes.status);
+    const data = await ghRes.json();
+    res.json(data.filter(r => !r.fork).map(r => ({
+      id:r.id, name:r.name, desc:r.description, url:r.html_url, language:r.language, stars:r.stargazers_count,
+    })));
+  } catch (err) { res.status(502).json({ error: 'GitHub repolari alinamadi' }); }
+});
+```
+- **`fetch` backend'de de var** (Node 18+). Backend hem sunucu hem başka API'lere istemci olabilir.
+- **`?sort=updated&per_page=100`** = en son güncellenen önde, en çok 100.
+- **`User-Agent` zorunlu** (yoksa 403). **`.filter(!fork)`** = forkları ele. **`.map`** = kocaman cevabı 6 alana indir.
+- **`res.status(502)` (Bad Gateway)** = bizim sunucu çalıştı ama arkadaki servise (GitHub) ulaşırken sorun oldu — doğru status kodu.
+
+**Rate limit + token (yaşadığımız gerçek olay):** Token'sız GitHub saatte **60 istek** → **403 rate limit** aldık (paylaşımlı IP hızlı doldurur). Çözüm: GitHub **classic token**, **hiç scope işaretlemeden** (sadece okuma, limit 5000/saat). **En az yetki (least privilege):** token ne kadar az yetkili, sızsa o kadar az zarar. `public_repo` bile gereksiz (o yazma yetkisi de verir).
+
+**(b) Yayınlanacakları seçme — snapshot deseni.** **Karar:** seçili repoların bilgisini DB'ye **fotoğraf** olarak kaydet; public site DB'den okur, GitHub'a hiç gitmez → hızlı + GitHub çökse bile site ayakta + rate limit yemez.
+
+**DB:** `featured_repos`: `github_id (PRIMARY KEY — GitHub id zaten benzersiz, aynı repo iki kez eklenmez), name, description, url, language, stars`.
+```js
+app.get('/api/github/featured', (req, res) => {       // public
+  const rows = db.prepare('SELECT github_id, name, description, url, language, stars FROM featured_repos').all();
+  res.json(rows.map(r => ({ id:r.github_id, name:r.name, desc:r.description, url:r.url, language:r.language, stars:r.stars })));
+});
+app.put('/api/github/featured', authGuard, (req, res) => {   // korumalı; DELETE + INSERT
+  db.exec('DELETE FROM featured_repos');
+  const insert = db.prepare('INSERT INTO featured_repos (github_id, name, description, url, language, stars) VALUES (?, ?, ?, ?, ?, ?)');
+  for (const r of req.body) insert.run(r.id, r.name, r.desc, r.url, r.language, r.stars);
   res.json({ ok: true });
 });
 ```
-- **Nodemailer** = Node e-posta kütüphanesi. **transporter** = SMTP bağlantısı (Gmail + app password).
-- **SMTP** = e-posta gönderme protokolü. **App Password** = Gmail'in dış uygulamalara verdiği 16 haneli özel şifre (2FA şart; normal şifre kullanılmaz).
-- Endpoint **async** oldu (`sendMail` await ister).
-- **try/catch:** mail başarısız olsa bile form başarılı döner — e-posta "olursa iyi", form akışını bozmamalı.
-- `.env`: `EMAIL_USER`, `EMAIL_APP_PASSWORD`, `EMAIL_TO` (hepsi secret, git'e gitmez).
 
----
-
-## ✅ Adım 5 — Veritabanı (SQLite)
-
-### 5.1 — DB kurulumu + content/projects'i taşıma
-- **SQLite** = dosya-tabanlı SQL veritabanı; ayrı sunucu yok, tek dosya (`portfolio.db`). **node:sqlite** = Node'un **yerleşik** modülü (v22+), kurulum gerekmez. *(Başlangıçta "experimental" uyarısı normaldir.)*
-- `backend/db.js`: DB'yi aç → tabloları oluştur → ilk çalışmada JSON'dan tohumla.
-```js
-const { DatabaseSync } = require('node:sqlite');
-const db = new DatabaseSync('portfolio.db');
-db.exec(`CREATE TABLE IF NOT EXISTS projects (
-  id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, tech TEXT)`);
+**Frontend (`GithubRepos.jsx`, admin):** açılışta hem `/repos` (tümü) hem `/featured` (önceden seçilenler) çekilir → checkbox'lar önceden işaretli. Seçim:
+```jsx
+prev.includes(id) ? prev.filter(x=>x!==id) : [...prev, id]   // toggle (immutable)
+checked={selectedIds.includes(r.id)}                          // kontrollü checkbox
+repos.filter(r => selectedIds.includes(r.id))                 // kaydederken seçili nesneler → PUT (token'lı)
 ```
-- **SQL temelleri:**
-  - `CREATE TABLE` → tablo şeması (sütunlar + tipler). `PRIMARY KEY` = benzersiz kimlik, `AUTOINCREMENT` = otomatik artan id.
-  - `SELECT ... FROM` → oku. `.get()` = tek satır, `.all()` = tüm satırlar.
-  - `INSERT INTO ... VALUES (?, ?)` → ekle. `UPDATE ... SET ... WHERE` → güncelle. `DELETE FROM` → sil.
-- **`db.prepare(sql)` + `?` yer tutucular** → parametreli sorgu; değerleri `.run(d1, d2)` / `.get(..)` / `.all(..)` ile geçir.
-- **🔒 Güvenlik — SQL Injection:** Kullanıcı girdisini **ASLA** SQL metnine string olarak yapıştırma! Hep `?` yer tutucu + `.run(deger)` kullan → SQL injection'ı önler. (OWASP #1.)
-- **tech dizisi:** SQL'de dizi tipi yok → `JSON.stringify` ile metin sakla, okurken `JSON.parse`.
-- **desc → description:** `desc` SQL'de ayrılmış kelime (sıralama); sütunu `description` yaptık, API'de `desc` olarak eşledik (`r.description → desc`).
-- Artık canlı veri **`portfolio.db`**'de; `content.json`/`projects.json` yalnızca ilk tohum. `*.db` → `.gitignore`.
+
+**Frontend (`Home.jsx`):** `GET /api/github/featured` (token yok) → `featured.length>0 &&` → "GitHub Projelerim" bölümü; her repo tıklanabilir kart.
+
+**Ders:** Aynı veri (repolar) iki endpoint, iki amaç: `/repos` = canlı GitHub (admin seçsin), `/featured` = DB snapshot (ziyaretçi görsün). Endpoint tasarımı = "bu veriyi kim, ne zaman, nereden görmeli?"
+
+## 4.6 — Görsel/dosya yükleme (multer) 📷
+
+**Ne:** Projelere kapak görseli. **Yeni kavram:** dosya metinden farklı taşınır.
+
+**Neden `multipart/form-data`?** Şimdiye dek hep **JSON (metin)** yolladık. Resim **ikili (binary)** ve **büyük** → JSON'a tıkıştırılmaz. `multipart/form-data` = "istekte hem metin hem büyük dosya var" diyen özel format. Tarayıcıda **`FormData`**, backend'de **`multer`** middleware'i.
+
+**Dosya nerede durur?** Resmin **kendisi diskte** (`backend/uploads/`), DB'de **sadece yol** (`/uploads/123.png`). DB dosya deposu değil, "etiket" tutar. (`uploads/` → `.gitignore`.) Analoji: kütüphanede kitap (resim) rafta, DB fişi (yol) raf numarasını söyler.
+
+**Backend:**
+```js
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+app.use('/uploads', express.static(uploadDir));   // tarayıcı /uploads/.. ile erişir
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, Date.now() + '-' + Math.round(Math.random()*1e9) + ext);  // KENDİ rastgele adımız
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 2*1024*1024 },               // 2MB
+  fileFilter: (req, file, cb) => {
+    const ok = ['image/png','image/jpeg','image/webp','image/gif'].includes(file.mimetype);
+    cb(ok ? null : new Error('Sadece resim yuklenebilir'), ok);
+  },
+});
+app.post('/api/upload', authGuard, (req, res) => {   // korumalı
+  upload.single('image')(req, res, (err) => {        // elle çağırıyoruz ki hata (tip/boyut) yakalanabilsin
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadi' });
+    res.json({ url: `/uploads/${req.file.filename}` });
+  });
+});
+```
+- **`express.static`** = bir klasörü olduğu gibi web'de yayınlar.
+- **`express.json()` dosyayı çözemez** (o sadece metin bilir) → dosya için ayrı çözücü: `multer`.
+
+**🔒 Güvenlik (upload klasik saldırı yüzeyi):**
+- **fileFilter (tip):** sadece resim → `.php/.exe` yükleyip çalıştırma (**malicious upload**) engeli.
+- **limits (boyut):** 2MB → dev dosyayla disk doldurma (**DoS**) engeli.
+- **Kendi dosya adımız:** kullanıcının adını kullanmayız → `../../etc/passwd` (**path traversal**) engeli.
+- **authGuard:** sadece giriş yapan admin yükler.
+
+**Frontend (`ProjectsEditor.jsx`):**
+```js
+const formData = new FormData();
+formData.append('image', file);                    // backend'de upload.single('image') ile eşleşir
+fetch('.../api/upload', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, body: formData });
+```
+- ⚠️ **EN KRİTİK TUZAK:** FormData gönderirken `Content-Type`'ı **ELLE YAZMA.** Tarayıcı multipart "boundary"sini kendi ekler; elle yazarsan boundary eksik kalır, upload bozulur.
+- `<input type="file" accept="image/*">` → `onChange` ile `uploadImage(i, file)` → dönen `url`'yi `updateProject(i,'image',url)` ile sakla → `<img>` önizleme.
+
+**Fotoğrafın tam yolculuğu:** admin dosya seçer → FormData POST → authGuard → multer (fileFilter → limits → diske kaydet) → `{url}` döner → frontend projenin `image` alanına yazar → "Projeleri Kaydet" PUT → DB `image` sütununa **yol** yazılır → public site `<img src>` ile gösterir → `express.static` resmi diskten sunar. (Resim 1 kez bile DB'ye girmedi.)
+
+## 4.7 — Devam eden projeler + ilerleme çubuğu
+
+**Ne:** "Üzerinde çalıştığım projeler" bölümü; her birinde % ilerleme çubuğu, admin'den **slider** ile ayarlanır. Dizi-CRUD **projeler editörüyle aynı** (pekiştirme); yeni olan: `range` input + yüzdeden çubuk çizmek.
+
+**DB:** `wip_projects`: `id (AUTOINCREMENT), title, note, progress INTEGER DEFAULT 0`.
+
+**Backend:** public `GET /api/wip` + korumalı `PUT /api/wip` (DELETE+INSERT). Yüzde backend'de **sabitlenir:**
+```js
+const p = Math.max(0, Math.min(100, Number(w.progress) || 0));  // 0-100 dışına çıkamaz
+```
+→ Backend frontend'e tam güvenmez; biri 999 yollasa 100'e iner. (Küçük ama doğru güvenlik alışkanlığı — **never trust the client**.)
+
+**Frontend (`ProgressEditor.jsx`):** ProjectsEditor iskeleti (map/filter/spread) +:
+```jsx
+<input type="range" min="0" max="100" value={w.progress}
+  onChange={(e) => updateItem(i, 'progress', Number(e.target.value))} />
+<div className="bar"><div className="bar-fill" style={{ width: `${w.progress}%` }} /></div>
+```
+- **`Number(e.target.value)`** → range STRING verir, sayıya çeviririz.
+- **`style={{ width: `${w.progress}%` }}`** → inline style ile çubuk genişliğini state'e bağladık; slider'ı çekince anında güncellenir.
+
+**Frontend (`Home.jsx`):** `GET /api/wip` → `wip.length>0 &&` bölüm; her item'da `.bar/.bar-fill` çubuğu. CSS: `transition: width .3s` (yumuşak dolum) + `linear-gradient` (renkli).
 
 ---
 
-## 🔜 Sıradaki fikirler
-- [ ] Projeleri veritabanından çekmek (şu an kodda sabit)
-- [ ] İletişim formu → backend'e POST
-- [ ] Tasarımı güzelleştirmek
-- [ ] Docker ile paketlemek (bildiğin konu, "zor katman")
-- [ ] Deploy (yayına alma)
+## 4.8 — Tasarım: Tailwind + "Sumi & Steel" teması 🎨
+
+**Ne:** Public site'ı (Home) brutalist + Japon temalı bir tasarıma geçirdik. **Yeni araç: Tailwind CSS.**
+
+**Süreç:** Google **Stitch** (AI UI aracı) ile prompt'tan tasarım ürettik → Stitch bir **tasarım sistemi** ("Sumi & Steel") + Tailwind HTML verdi → ben o tasarımı bizim React bileşenlerine, **gerçek veriye bağlayarak** taşıdım. (Stitch MCP ile Claude Code'a bağlandı; tasarımı doğrudan çektim.)
+
+**Tailwind nedir?** Hazır CSS "utility" sınıfları. Ayrı CSS yazmak yerine doğrudan HTML/JSX'te sınıf dizersin: `bg-surface border-2 border-on-surface shadow-[4px_4px_0px_#ff5541]`. Avantaj: hızlı, tutarlı, tasarım token'larına bağlı.
+
+**Kurulum:**
+- `npm install -D tailwindcss@3 postcss autoprefixer`
+- `tailwind.config.js` → **tasarım token'ları** (renk/font/boşluk/tipografi) burada tanımlı; Stitch'in "Sumi & Steel" değerlerini birebir koyduk. Sınıf adları bu token'lardan üretilir (`bg-primary-container` → `#ff5541`).
+- `postcss.config.js` → Tailwind'i derleyiciye bağlar.
+- `src/index.css` → `@tailwind base/components/utilities` + brutalist temel (`* { border-radius: 0 }`, koyu arka plan, `pulse-fast` animasyonu).
+- `index.html` → Google Fonts (Space Grotesk + JetBrains Mono) + `<html class="dark">`.
+
+**Tasarım sistemi (Sumi & Steel) özü:**
+- **Renk:** sumi mürekkebi `#141414` + washi beyazı `#e5e2e1` + torii kırmızısı `#ff5541` (primary-container) + indigo `#243b6b` + kintsugi altını `#cea72c`. Hepsi **düz** (gradient yok).
+- **Tipografi:** Space Grotesk (başlık, iri/uppercase) + JetBrains Mono (etiket/terminal).
+- **Şekil:** her yerde keskin 90° köşe (`border-radius: 0`).
+- **Derinlik:** blur'suz **sert offset gölge** (`4px 4px 0px <renk>`) + kalın `2px` kenarlıklar. Hover'da öğe gölge yönüne kayar (`translate`).
+- **Motif:** ejderha + maneki-neko kedi **woodblock damga** görselleri (`public/dragon.png`, `public/cat.png`), hanko mühürleri (`龍神印`), dikey Japonca metin (`writing-mode: vertical-rl`), terminal etiketleri.
+
+**`Home.jsx` bölümleri (hepsi gerçek veriye bağlı):** üst telemetri şeridi · hero (isim + spec kutusu + ejderha damgası) · PROJELER (kapak görselli kartlar) · DEVAM EDENLER (brutalist ilerleme çubukları) · GITHUB · İLETİŞİM (terminal formu + kedi damgası) · footer.
+
+**Önizleme:** `.claude/launch.json` ile Vite başlatılıp tarayıcı panelinde görüldü. **Not:** Admin paneli şimdilik eski (düz CSS) görünümünde — işlevi bozulmadı; istersek sonra temayı ona da uygularız.
+
+---
+
+# 5. Başvuru Tabloları ("şu neredeydi?")
+
+## 5.1 — Tüm API uçları
+| Metot | Yol | Koruma | Ne yapar |
+|---|---|---|---|
+| GET | `/api/content` | public | İçeriği döndürür (tek satır) |
+| PUT | `/api/content` | 🔒 authGuard | İçeriği günceller |
+| GET | `/api/projects` | public | Manuel projeleri döndürür |
+| PUT | `/api/projects` | 🔒 authGuard | Projeleri kaydeder (DELETE+INSERT) |
+| POST | `/api/contact` | public | Mesajı DB'ye yazar + mail gönderir |
+| GET | `/api/messages` | 🔒 authGuard | Gelen mesajları listeler (yeni→eski) |
+| POST | `/api/login` | public | Giriş; doğruysa JWT token döner |
+| POST | `/api/upload` | 🔒 authGuard | Resim yükler, `{url}` döner |
+| GET | `/api/github/repos` | public | GitHub'daki tüm repoları çeker |
+| GET | `/api/github/featured` | public | Yayınlanan repoları (DB snapshot) döndürür |
+| PUT | `/api/github/featured` | 🔒 authGuard | Seçili repoları kaydeder |
+| GET | `/api/wip` | public | Devam eden projeleri döndürür |
+| PUT | `/api/wip` | 🔒 authGuard | Devam eden projeleri kaydeder |
+| (statik) | `/uploads/<dosya>` | public | Yüklenen görseli sunar (express.static) |
+
+## 5.2 — DB şeması (`backend/db.js`)
+```sql
+content(        id PK, name, title, about, github, linkedin )          -- tek satır (id=1)
+projects(       id PK AUTOINCREMENT, title, description, tech, image )  -- tech=JSON metni, image=yol
+messages(       id PK AUTOINCREMENT, name, message, created_at )        -- created_at otomatik
+featured_repos( github_id PK, name, description, url, language, stars ) -- GitHub snapshot
+wip_projects(   id PK AUTOINCREMENT, title, note, progress )            -- progress 0-100
+```
+**SQL temelleri:** `CREATE TABLE` (şema), `SELECT`/`.get()` (tek satır)/`.all()` (hepsi), `INSERT`, `UPDATE ... WHERE`, `DELETE`.
+**Parametreli sorgu:** `db.prepare('... ?').run(deger)` — değer SQL metnine **string olarak yapıştırılmaz**.
+**Migration:** var olan tabloya veri kaybetmeden sütun ekleme:
+```js
+const cols = db.prepare('PRAGMA table_info(projects)').all();        // sütunları listele
+if (!cols.some(c => c.name === 'image')) db.exec('ALTER TABLE projects ADD COLUMN image TEXT');
+```
+`CREATE TABLE IF NOT EXISTS` var olan tabloya **yeni sütun eklemez**; o yüzden `ALTER TABLE` + PRAGMA kontrolü gerekti (image, github, linkedin bu yolla eklendi).
+**Tohumlama (seed):** tablo boşsa (`SELECT COUNT(*)`) JSON'dan ilk veriyi yükler — yalnızca ilk çalışmada.
+
+## 5.3 — Güvenlik özeti (mülakat için)
+| Önlem | Nerede | Engellediği saldırı |
+|---|---|---|
+| bcrypt hash | `.env` şifre | Sızıntıda şifre çıkmaz; brute-force / rainbow table |
+| Aynı login hata mesajı | `/api/login` | User enumeration |
+| JWT imza | `jwt.sign/verify` | Token sahteciliği (tampering) |
+| `expiresIn: 2h` | token | Çalınan token'ın ömrünü kısaltır |
+| authGuard | korumalı uçlar | Broken Access Control (OWASP #1) |
+| `?` parametreli sorgu | tüm DB çağrıları | **SQL Injection** |
+| Token backend'de | GitHub çağrısı | Secret exposure (tarayıcıya sızma) |
+| Least privilege token | GitHub classic token | Sızıntıda hasarı sınırlar |
+| fileFilter / limits / rename | multer | Malicious upload / DoS / path traversal |
+| progress clamp (0-100) | `/api/wip` | Bozuk/aşırı girdi (never trust client) |
+| `.gitignore`: `.env`, `*.db`, `uploads/` | repo | Secret'ın public repo'ya sızması |
+| `rel="noreferrer"` dış linkler | Home | Referrer/tabnabbing sızıntısı |
+
+**Henüz yapılmadı (geliştirme listesi):** login rate-limit (brute-force), input validation (zod), localStorage→httpOnly cookie (XSS), CORS'u daralt, HTTPS.
+
+## 5.4 — Frontend dosya haritası
+| Dosya | Tür | Sorumluluk |
+|---|---|---|
+| `main.jsx` | giriş | `<App/>`'i `<BrowserRouter>` ile sarar |
+| `App.jsx` | router | `/`→Home, `/admin`→Admin |
+| `pages/Home.jsx` | sayfa | Public site: content, projeler, wip, GitHub, iletişim |
+| `pages/Admin.jsx` | sayfa | Login + içerik formu; alt bileşenleri barındırır |
+| `components/ProjectsEditor.jsx` | bileşen | Proje CRUD + görsel yükleme |
+| `components/MessagesList.jsx` | bileşen | Mesaj listesi (korumalı) |
+| `components/GithubRepos.jsx` | bileşen | Repo listesi + yayın seçimi |
+| `components/ProgressEditor.jsx` | bileşen | Devam eden projeler + slider |
+- **pages/** = bir URL'e karşılık gelen tam ekran. **components/** = sayfaların içine konan parçalar (kendi URL'leri yok).
+- **props:** `<ProjectsEditor token={token}/>` → üstten alta veri; alt `function X({ token })` ile alır.
+
+## 5.5 — React kavram sözlüğü
+- **useState** → bileşenin hafızası; `setX` ile değişince React arayüzü yeniden çizer.
+- **useEffect(fn, [])** → bileşen ilk gelince **bir kez** çalışır (veri çekme). `[token]` → token değişince tekrar çalışır.
+- **controlled input** → `value={state}` + `onChange`; React input'u kontrol eder.
+- **immutable update** → state'i bozmadan **yeni** obje/dizi ver: `{...prev, [key]:v}`, `map`, `filter`, `[...prev, yeni]`.
+- **optional chaining `?.`** → `content?.name`: `content` null iken çökmeyi önler.
+- **koşullu render** → `{x.length > 0 && <...>}` / `if (!token) return <Login/>`.
+- **lazy initial state** → `useState(() => localStorage.getItem('token') || '')`.
+- **key** → listede `.map` ederken her öğeye benzersiz `key` (React için).
+
+## 5.6 — Node/Express kavram sözlüğü
+- `require('x')` → modül içe aktarma (CommonJS). `fs`,`path` yerleşik; `express`,`cors`,`multer`... npm paketi.
+- `app.use(fn)` → **middleware** (her istekte route'tan önce: cors, express.json, express.static).
+- `app.get/post/put('/yol', [guard,] handler)` → route. `req`=istek, `res`=cevap.
+- `req.body` (express.json doldurur), `req.headers`, `req.file` (multer), `res.json(x)`, `res.status(n)`.
+- `__dirname` → dosyanın klasörü. `path.join(...)` → güvenli yol.
+- **HTTP durum kodları:** 200 ok, 400 kötü istek, 401 yetkisiz, 404 yok, 500 sunucu hatası, 502 bad gateway.
+- **REST metotları:** GET oku, POST oluştur, PUT güncelle, DELETE sil.
+- **async/await:** promise'leri senkron gibi yazma. `await p` → p çözülene kadar **bu fonksiyonu** bekletir (programı değil). Hata → `try/catch`.
+- **Lifecycle:** kod başta **bir kez** çalışır (kur + BEKLE); route'lar **sonra**, her istekte tetiklenir (event-driven).
+
+## 5.7 — Hata günlüğü (yaşadıklarımız + ders)
+| Hata | Sebep | Çözüm / ders |
+|---|---|---|
+| "Backend'e ulaşılamadı" (ilk açılış) | Sayfa, backend hazır olmadan istek attı | Yenile; frontend bağımlı olduğu API çalışıyor olmalı |
+| `EADDRINUSE :::3001` | Eski node portu tutuyor | `kill $(lsof -t -i:3001)`; Node'u hep Ctrl+C ile kapat |
+| İçerik kaydolmadı | İki "Kaydet" butonu karışmış + `about` Home'da basılmıyordu | Butonları netle; **sakladığın her alanı ekranda da göster** |
+| GitHub "yüklenemedi" | Token'sız **403 rate limit** | GitHub classic token (scope'suz), `.env`'e `GITHUB_TOKEN` |
+| bcrypt kurulum uyarısı | native derleme (npm 11) | `bcryptjs` (saf JS) kullan |
+
+---
+
+# 6. 🔜 Sıradaki fikirler
+- [ ] **Tasarım** (içerik oturdu; görünümü güzelleştir) — öncelik
+- [ ] **Frontend'i baştan oturtma turu** (React/state/props/CSS kafaya net otursun) — tasarımdan önce
+- [ ] Güvenlik/aktivite logu (başarısız girişler, IP) — SOC geçmişiyle örtüşen, öne çıkaran feature
+- [ ] Blog (yeni içerik tipi)
+- [ ] Deploy (yayına alma) + production sertleştirmeleri (bkz. 5.3 "henüz yapılmadı")
+- [ ] Docker ile paketleme
 
 ---

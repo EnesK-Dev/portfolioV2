@@ -9,3 +9,6 @@ dist/
 
 # veritabani dosyasi
 *.db
+
+# yuklenen gorseller
+backend/uploads/
