@@ -1,0 +1,10 @@
+{
+  // Cloudflare statik site (Vite dist'i servis eder)
+  "name": "portfoliov2",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./dist",
+    // React Router: bilinmeyen yollar index.html'e dusup SPA icinde cozulsun
+    "not_found_handling": "single-page-application"
+  }
+}
