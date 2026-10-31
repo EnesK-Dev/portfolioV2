@@ -1,0 +1,7 @@
+# Fly imajina KOPYALANMASIN (sir sizmasi + gereksiz dosya)
+node_modules
+.env
+*.db
+uploads
+npm-debug.log
+.DS_Store

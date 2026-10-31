@@ -82,19 +82,21 @@ if (!contentCols.some((c) => c.name === 'linkedin')) {
 
 // --- Ilk calismada JSON'dan tohumla (migrate) ---
 
-// content tablosu bossa content.json'dan al
+// content tablosu bossa content.json'dan al (dosya yoksa atla -> cokme yok)
 const contentCount = db.prepare('SELECT COUNT(*) AS n FROM content').get().n;
-if (contentCount === 0) {
-  const c = JSON.parse(fs.readFileSync(path.join(__dirname, 'content.json'), 'utf-8'));
-  db.prepare('INSERT INTO content (id, name, title, about) VALUES (1, ?, ?, ?)')
-    .run(c.name, c.title, c.about);
+const contentSeedPath = path.join(__dirname, 'content.json');
+if (contentCount === 0 && fs.existsSync(contentSeedPath)) {
+  const c = JSON.parse(fs.readFileSync(contentSeedPath, 'utf-8'));
+  db.prepare('INSERT INTO content (id, name, title, about, github, linkedin) VALUES (1, ?, ?, ?, ?, ?)')
+    .run(c.name, c.title, c.about, c.github ?? null, c.linkedin ?? null);
   console.log('content tablosu JSON\'dan tohumlandi');
 }
 
-// projects tablosu bossa projects.json'dan al
+// projects tablosu bossa projects.json'dan al (dosya yoksa atla)
 const projCount = db.prepare('SELECT COUNT(*) AS n FROM projects').get().n;
-if (projCount === 0) {
-  const projects = JSON.parse(fs.readFileSync(path.join(__dirname, 'projects.json'), 'utf-8'));
+const projSeedPath = path.join(__dirname, 'projects.json');
+if (projCount === 0 && fs.existsSync(projSeedPath)) {
+  const projects = JSON.parse(fs.readFileSync(projSeedPath, 'utf-8'));
   const insert = db.prepare('INSERT INTO projects (title, description, tech) VALUES (?, ?, ?)');
   for (const p of projects) {
     insert.run(p.title, p.desc, JSON.stringify(p.tech));  // tech dizisini JSON metni olarak sakla

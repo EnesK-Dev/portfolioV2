@@ -18,5 +18,8 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.4.0",
     "nodemailer": "^10.1.2"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.15"
   }
 }
