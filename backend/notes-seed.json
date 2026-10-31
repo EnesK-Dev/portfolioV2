@@ -1,0 +1,2792 @@
+[
+  {
+    "slug": "20-onemli-port",
+    "title": {
+      "tr": "Bilmen Gereken 20 Port",
+      "en": "20 Ports You Must Know"
+    },
+    "category": {
+      "tr": "AĞ / SOC",
+      "en": "NETWORK / SOC"
+    },
+    "type": "ports",
+    "data": {
+      "tr": [
+        {
+          "name": "FTP",
+          "port": "TCP 21",
+          "full": "File Transfer Protocol",
+          "desc": "Dosya aktarım protokolü; veriyi ŞİFRESİZ taşır.",
+          "log": "FTP sunucu ve auth loglarında bağlantı/giriş denemeleri görünür. Şifresiz olduğu için brute force ve veri sızıntısı açısından risklidir."
+        },
+        {
+          "name": "SSH",
+          "port": "TCP 22",
+          "full": "Secure Shell",
+          "desc": "Sunuculara ŞİFRELİ uzaktan erişim ve komut çalıştırma.",
+          "log": "sshd auth loglarında başarılı/başarısız girişler. Brute force'un 1 numaralı hedefi; tekrarlayan 'failed password' = IOA."
+        },
+        {
+          "name": "Telnet",
+          "port": "TCP 23",
+          "full": "Telnet (Remote Login)",
+          "desc": "Eski, ŞİFRESİZ uzaktan erişim protokolü.",
+          "log": "Açık Telnet portu başlı başına bir bulgudur; trafiği düz metin olduğundan kimlik bilgileri ağda okunabilir."
+        },
+        {
+          "name": "SMTP",
+          "port": "TCP 25",
+          "full": "Simple Mail Transfer Protocol",
+          "desc": "Sunucular arası e-posta GÖNDERME protokolü.",
+          "log": "Mail sunucu loglarında gönderim kayıtları. Spam/relay kötüye kullanımı ve veri sızdırma kanalı olarak izlenir."
+        },
+        {
+          "name": "DNS",
+          "port": "TCP/UDP 53",
+          "full": "Domain Name System",
+          "desc": "Alan adlarını IP'ye çeviren sistem.",
+          "log": "DNS loglarında sorgular. Olağandışı/şüpheli domain sorguları (DNS tunneling, C2) tespitte kritiktir."
+        },
+        {
+          "name": "DHCP Server",
+          "port": "UDP 67",
+          "full": "Dynamic Host Configuration (Server)",
+          "desc": "Ağdaki cihazlara otomatik IP dağıtır (sunucu tarafı).",
+          "log": "DHCP loglarında IP atama kayıtları. Yetkisiz (rogue) DHCP sunucusu tespitinde bakılır."
+        },
+        {
+          "name": "DHCP Client",
+          "port": "UDP 68",
+          "full": "Dynamic Host Configuration (Client)",
+          "desc": "Cihazın DHCP'den IP istediği port (istemci tarafı).",
+          "log": "IP kiralama istekleri. Cihaz envanteri ve ağa yeni katılan cihazları takip için."
+        },
+        {
+          "name": "HTTP",
+          "port": "TCP 80",
+          "full": "HyperText Transfer Protocol",
+          "desc": "ŞİFRESİZ web trafiği.",
+          "log": "Web sunucu (Apache) erişim loglarında istekler. Şifresiz olduğu için MITM/veri açığa çıkma riski; web saldırılarının ana yüzeyi."
+        },
+        {
+          "name": "POP3",
+          "port": "TCP 110",
+          "full": "Post Office Protocol v3",
+          "desc": "E-postayı sunucudan İNDİRME protokolü (eski).",
+          "log": "Mail istemci bağlantıları. Şifresiz varyantı kimlik bilgisi sızıntısı açısından izlenir."
+        },
+        {
+          "name": "NTP",
+          "port": "UDP 123",
+          "full": "Network Time Protocol",
+          "desc": "Cihaz saatlerini senkronize eder.",
+          "log": "Log zaman damgalarının doğruluğu buna bağlı (kritik). NTP amplification DDoS'ta kötüye kullanılır."
+        },
+        {
+          "name": "NetBIOS",
+          "port": "TCP 139",
+          "full": "NetBIOS Session Service",
+          "desc": "Eski Windows dosya/yazıcı paylaşımı ve ad çözümleme.",
+          "log": "İç ağ keşfi ve yanal hareket (lateral movement) sinyali. Dışarıya açıksa ciddi risk."
+        },
+        {
+          "name": "IMAP",
+          "port": "TCP 143",
+          "full": "Internet Message Access Protocol",
+          "desc": "E-postayı sunucuda tutarak erişim (POP3'ten gelişmiş).",
+          "log": "Mail erişim kayıtları. Hesap ele geçirme denemelerinde giriş logları izlenir."
+        },
+        {
+          "name": "HTTPS",
+          "port": "TCP 443",
+          "full": "HTTP Secure (SSL/TLS)",
+          "desc": "ŞİFRELİ (TLS) web trafiği.",
+          "log": "Standart güvenli web; ama C2 ve veri sızıntısı da genelde 443 içinde gizlenir. Sertifika/SNI anomalileri izlenir."
+        },
+        {
+          "name": "SMB",
+          "port": "TCP 445",
+          "full": "Server Message Block",
+          "desc": "Windows dosya/yazıcı paylaşımı.",
+          "log": "Fidye yazılımı ve solucanların (WannaCry/EternalBlue) ana yayılma yolu. İç ağda yoğun 445 = alarm."
+        },
+        {
+          "name": "Oracle DB",
+          "port": "TCP 1521",
+          "full": "Oracle Database Listener",
+          "desc": "Oracle veritabanı iletişim portu.",
+          "log": "DB bağlantı denemeleri. Dışarı açık DB portu veya brute force kritik bulgudur."
+        },
+        {
+          "name": "LDAP",
+          "port": "TCP/UDP 389",
+          "full": "Lightweight Directory Access Protocol",
+          "desc": "Dizin servisi: kullanıcı/kaynak sorgulama (Active Directory).",
+          "log": "AD sorguları. Keşif (recon) ve LDAP enumeration/injection tespitinde kritik."
+        },
+        {
+          "name": "SNMP",
+          "port": "UDP 161",
+          "full": "Simple Network Management Protocol",
+          "desc": "Ağ cihazlarını izleme/yönetme protokolü.",
+          "log": "Varsayılan 'public' community string ile bilgi sızar. Cihaz keşfi için saldırganlarca taranır."
+        },
+        {
+          "name": "MySQL",
+          "port": "TCP 3306",
+          "full": "MySQL Database",
+          "desc": "MySQL veritabanı iletişimi.",
+          "log": "Yetkisiz DB erişim/brute force denemeleri. İnternete açık 3306 sık bir yanlış yapılandırmadır."
+        },
+        {
+          "name": "RDP",
+          "port": "TCP 3389",
+          "full": "Remote Desktop Protocol",
+          "desc": "Windows uzak masaüstü.",
+          "log": "Fidye yazılımı girişlerinin en sık yolu. Açık RDP'ye brute force (Event ID 4625) yoğun izlenir."
+        },
+        {
+          "name": "PostgreSQL",
+          "port": "TCP 5432",
+          "full": "PostgreSQL Database",
+          "desc": "PostgreSQL veritabanı iletişimi.",
+          "log": "DB bağlantıları. Açık/zayıf parolalı Postgres hedef alınır; giriş logları izlenir."
+        }
+      ],
+      "en": [
+        {
+          "name": "FTP",
+          "port": "TCP 21",
+          "full": "File Transfer Protocol",
+          "desc": "File transfer protocol; carries data UNENCRYPTED.",
+          "log": "Connection/login attempts appear in FTP server and auth logs. Unencrypted, so risky for brute force and data leakage."
+        },
+        {
+          "name": "SSH",
+          "port": "TCP 22",
+          "full": "Secure Shell",
+          "desc": "ENCRYPTED remote access and command execution on servers.",
+          "log": "Success/failure logins in sshd auth logs. The #1 brute-force target; repeated 'failed password' = IOA."
+        },
+        {
+          "name": "Telnet",
+          "port": "TCP 23",
+          "full": "Telnet (Remote Login)",
+          "desc": "Old, UNENCRYPTED remote access protocol.",
+          "log": "An open Telnet port is a finding by itself; traffic is plaintext, so credentials are readable on the wire."
+        },
+        {
+          "name": "SMTP",
+          "port": "TCP 25",
+          "full": "Simple Mail Transfer Protocol",
+          "desc": "Server-to-server email SENDING protocol.",
+          "log": "Send records in mail server logs. Watched for spam/relay abuse and as a data-exfiltration channel."
+        },
+        {
+          "name": "DNS",
+          "port": "TCP/UDP 53",
+          "full": "Domain Name System",
+          "desc": "System that resolves domain names to IPs.",
+          "log": "Queries in DNS logs. Unusual/suspicious domain lookups (DNS tunneling, C2) are critical for detection."
+        },
+        {
+          "name": "DHCP Server",
+          "port": "UDP 67",
+          "full": "Dynamic Host Configuration (Server)",
+          "desc": "Hands out IPs automatically to devices (server side).",
+          "log": "IP assignment records in DHCP logs. Checked when hunting for rogue DHCP servers."
+        },
+        {
+          "name": "DHCP Client",
+          "port": "UDP 68",
+          "full": "Dynamic Host Configuration (Client)",
+          "desc": "Port where a device requests an IP from DHCP (client side).",
+          "log": "IP lease requests. Used for device inventory and spotting new devices joining the network."
+        },
+        {
+          "name": "HTTP",
+          "port": "TCP 80",
+          "full": "HyperText Transfer Protocol",
+          "desc": "UNENCRYPTED web traffic.",
+          "log": "Requests in web server (Apache) access logs. Unencrypted means MITM/exposure risk; the main web attack surface."
+        },
+        {
+          "name": "POP3",
+          "port": "TCP 110",
+          "full": "Post Office Protocol v3",
+          "desc": "Protocol to DOWNLOAD email from the server (old).",
+          "log": "Mail client connections. The unencrypted variant is watched for credential leakage."
+        },
+        {
+          "name": "NTP",
+          "port": "UDP 123",
+          "full": "Network Time Protocol",
+          "desc": "Synchronizes device clocks.",
+          "log": "Accuracy of log timestamps depends on it (critical). Abused in NTP amplification DDoS."
+        },
+        {
+          "name": "NetBIOS",
+          "port": "TCP 139",
+          "full": "NetBIOS Session Service",
+          "desc": "Old Windows file/printer sharing and name resolution.",
+          "log": "A sign of internal recon and lateral movement. Serious risk if exposed externally."
+        },
+        {
+          "name": "IMAP",
+          "port": "TCP 143",
+          "full": "Internet Message Access Protocol",
+          "desc": "Access email while keeping it on the server (improved over POP3).",
+          "log": "Mail access records. Login logs are watched during account-takeover attempts."
+        },
+        {
+          "name": "HTTPS",
+          "port": "TCP 443",
+          "full": "HTTP Secure (SSL/TLS)",
+          "desc": "ENCRYPTED (TLS) web traffic.",
+          "log": "Standard secure web; but C2 and exfiltration often hide inside 443 too. Certificate/SNI anomalies are monitored."
+        },
+        {
+          "name": "SMB",
+          "port": "TCP 445",
+          "full": "Server Message Block",
+          "desc": "Windows file/printer sharing.",
+          "log": "Main spread path for ransomware and worms (WannaCry/EternalBlue). Heavy internal 445 traffic = alarm."
+        },
+        {
+          "name": "Oracle DB",
+          "port": "TCP 1521",
+          "full": "Oracle Database Listener",
+          "desc": "Oracle database communication port.",
+          "log": "DB connection attempts. An exposed DB port or brute force is a critical finding."
+        },
+        {
+          "name": "LDAP",
+          "port": "TCP/UDP 389",
+          "full": "Lightweight Directory Access Protocol",
+          "desc": "Directory service: user/resource queries (Active Directory).",
+          "log": "AD queries. Critical for detecting recon and LDAP enumeration/injection."
+        },
+        {
+          "name": "SNMP",
+          "port": "UDP 161",
+          "full": "Simple Network Management Protocol",
+          "desc": "Protocol to monitor/manage network devices.",
+          "log": "Leaks info via the default 'public' community string. Scanned by attackers for device discovery."
+        },
+        {
+          "name": "MySQL",
+          "port": "TCP 3306",
+          "full": "MySQL Database",
+          "desc": "MySQL database communication.",
+          "log": "Unauthorized DB access/brute-force attempts. Internet-exposed 3306 is a common misconfig."
+        },
+        {
+          "name": "RDP",
+          "port": "TCP 3389",
+          "full": "Remote Desktop Protocol",
+          "desc": "Windows remote desktop.",
+          "log": "The most common ransomware entry path. Brute force against open RDP (Event ID 4625) is closely monitored."
+        },
+        {
+          "name": "PostgreSQL",
+          "port": "TCP 5432",
+          "full": "PostgreSQL Database",
+          "desc": "PostgreSQL database communication.",
+          "log": "DB connections. Open/weak-password Postgres is targeted; login logs are watched."
+        }
+      ]
+    }
+  },
+  {
+    "slug": "lolbas-20-kotuye-kullanim",
+    "title": {
+      "tr": "LOLBAS: 20 Yaygın Kötüye Kullanım",
+      "en": "LOLBAS: 20 Common Abuses"
+    },
+    "category": {
+      "tr": "WINDOWS / SOC",
+      "en": "WINDOWS / SOC"
+    },
+    "type": "concept",
+    "data": {
+      "tr": [
+        {
+          "heading": "certutil.exe · İNDİRME / ENCODE",
+          "body": "Meşru: sertifika yönetimi. Kötüye: -urlcache ile internetten dosya indirir (indirici), -encode/-decode ile payload'u base64'e çevirip AV imzasını atlatır. Tespit: certutil komut satırında URL ya da encode/decode geçmesi."
+        },
+        {
+          "heading": "bitsadmin.exe · İNDİRME / KALICILIK",
+          "body": "Meşru: arka planda dosya transferi (BITS). Kötüye: /transfer ile payload indirir; iş kuyruğu ile kalıcılık sağlar. Tespit: bitsadmin /transfer + dış URL."
+        },
+        {
+          "heading": "mshta.exe · UZAK SCRIPT ÇALIŞTIRMA",
+          "body": "Meşru: HTA (HTML Application) çalıştırır. Kötüye: uzak HTA/VBScript/JScript'i doğrudan çalıştırır, uygulama kontrolünü atlar. Tespit: mshta'nın http(s) argümanı."
+        },
+        {
+          "heading": "rundll32.exe · PROXY EXECUTION",
+          "body": "Meşru: DLL export fonksiyonu çağırır. Kötüye: zararlı DLL çalıştırma, javascript: protokolüyle script exec, üst süreci gizleme. Tespit: rundll32 + olağandışı DLL veya 'javascript:'."
+        },
+        {
+          "heading": "regsvr32.exe · SQUIBLYDOO (BYPASS)",
+          "body": "Meşru: DLL/COM kaydı. Kötüye: scrobj.dll ile uzak .sct scriptlet çalıştırır, AppLocker'ı atlar (Squiblydoo). Tespit: regsvr32 /i:http... scrobj.dll."
+        },
+        {
+          "heading": "powershell.exe · DOSYASIZ EXEC",
+          "body": "Meşru: otomasyon/yönetim. Kötüye: DownloadString ile dosyasız indir+çalıştır, -enc base64 komut, AMSI bypass. Tespit: -enc, DownloadString, -nop -w hidden kalıpları."
+        },
+        {
+          "heading": "wmic.exe · UZAK EXEC / KEŞİF",
+          "body": "Meşru: WMI komut satırı. Kötüye: 'process call create' ile uzak komut çalıştırma, sistem keşfi, yanal hareket. Tespit: wmic process call create / /node:."
+        },
+        {
+          "heading": "msbuild.exe · INLINE C# (BYPASS)",
+          "body": "Meşru: .NET derleme aracı. Kötüye: proje dosyasına gömülü inline C#'ı derleyip çalıştırır (dosyasız, AppLocker bypass). Tespit: msbuild + şüpheli .xml/.csproj yolu."
+        },
+        {
+          "heading": "installutil.exe · UNINSTALL EXEC",
+          "body": "Meşru: .NET servis kurulumu. Kötüye: assembly'nin uninstall metodu üzerinden kod çalıştırır, uygulama kontrolünü atlar. Tespit: installutil /logfile= /U."
+        },
+        {
+          "heading": "cscript / wscript.exe · SCRIPT EXEC",
+          "body": "Meşru: VBScript/JScript çalıştırma. Kötüye: zararlı .vbs/.js (makro düşürücüler) çalıştırır. Tespit: wscript/cscript + geçici klasördeki script."
+        },
+        {
+          "heading": "schtasks.exe · KALICILIK",
+          "body": "Meşru: zamanlanmış görev yönetimi. Kötüye: yeniden başlatmada çalışacak kalıcılık, SYSTEM olarak çalıştırma. Tespit: schtasks /create + şüpheli komut/konum."
+        },
+        {
+          "heading": "reg.exe · KALICILIK / SAVUNMA KAPATMA",
+          "body": "Meşru: kayıt defteri düzenleme. Kötüye: Run anahtarıyla kalıcılık, Defender'ı kapatma, kimlik bilgisi okuma. Tespit: reg add ...\\Run, Defender anahtarları."
+        },
+        {
+          "heading": "net.exe / net1.exe · HESAP / KEŞİF",
+          "body": "Meşru: kullanıcı/paylaşım yönetimi. Kötüye: hesap ekleme (net user /add), gruba ekleme (net localgroup administrators), keşif. Tespit: net user/group + /add."
+        },
+        {
+          "heading": "sc.exe · ZARARLI SERVİS",
+          "body": "Meşru: servis kontrolü. Kötüye: zararlı servis oluşturup kalıcılık + SYSTEM exec. Tespit: sc create + şüpheli binPath."
+        },
+        {
+          "heading": "msiexec.exe · UZAK MSI",
+          "body": "Meşru: MSI paket kurulumu. Kötüye: uzak/zararlı MSI'yi indirip çalıştırır (/i http...). Tespit: msiexec /i http(s)."
+        },
+        {
+          "heading": "forfiles.exe · PROXY EXEC",
+          "body": "Meşru: dosya başına komut çalıştırma. Kötüye: /c ile komut proxy'leyerek başka exe başlatır (üst süreç gizleme). Tespit: forfiles /c cmd."
+        },
+        {
+          "heading": "cmstp.exe · UAC BYPASS",
+          "body": "Meşru: bağlantı yöneticisi profili kurar. Kötüye: zararlı .inf/.sct çalıştırır, UAC bypass. Tespit: cmstp /s + inf."
+        },
+        {
+          "heading": "regasm / regsvcs.exe · ASSEMBLY EXEC",
+          "body": "Meşru: .NET assembly kaydı. Kötüye: register/unregister sırasında kod çalıştırır, AppLocker bypass. Tespit: regasm/regsvcs + şüpheli dll."
+        },
+        {
+          "heading": "odbcconf.exe · DLL EXEC",
+          "body": "Meşru: ODBC sürücü yapılandırma. Kötüye: REGSVR eylemiyle DLL çalıştırır (proxy exec). Tespit: odbcconf + dll yolu."
+        },
+        {
+          "heading": "at.exe · KALICILIK (ESKİ)",
+          "body": "Meşru: eski görev zamanlayıcı. Kötüye: zamanlı çalıştırma ile kalıcılık (schtasks'ın eski hali). Tespit: at + komut; modern sistemlerde kullanımı zaten şüpheli."
+        }
+      ],
+      "en": [
+        {
+          "heading": "certutil.exe · DOWNLOAD / ENCODE",
+          "body": "Legit: certificate management. Abuse: -urlcache downloads files from the internet (downloader); -encode/-decode base64-wraps payloads to dodge AV signatures. Detect: a URL or encode/decode on the certutil command line."
+        },
+        {
+          "heading": "bitsadmin.exe · DOWNLOAD / PERSISTENCE",
+          "body": "Legit: background file transfer (BITS). Abuse: /transfer downloads payloads; the job queue provides persistence. Detect: bitsadmin /transfer + external URL."
+        },
+        {
+          "heading": "mshta.exe · REMOTE SCRIPT EXEC",
+          "body": "Legit: runs HTA (HTML Applications). Abuse: directly executes remote HTA/VBScript/JScript, bypassing app control. Detect: an http(s) argument to mshta."
+        },
+        {
+          "heading": "rundll32.exe · PROXY EXECUTION",
+          "body": "Legit: calls DLL export functions. Abuse: runs malicious DLLs, executes script via the javascript: protocol, hides the parent process. Detect: rundll32 + unusual DLL or 'javascript:'."
+        },
+        {
+          "heading": "regsvr32.exe · SQUIBLYDOO (BYPASS)",
+          "body": "Legit: DLL/COM registration. Abuse: uses scrobj.dll to run a remote .sct scriptlet, bypassing AppLocker (Squiblydoo). Detect: regsvr32 /i:http... scrobj.dll."
+        },
+        {
+          "heading": "powershell.exe · FILELESS EXEC",
+          "body": "Legit: automation/administration. Abuse: DownloadString for fileless download+run, -enc base64 commands, AMSI bypass. Detect: -enc, DownloadString, -nop -w hidden patterns."
+        },
+        {
+          "heading": "wmic.exe · REMOTE EXEC / RECON",
+          "body": "Legit: WMI command line. Abuse: 'process call create' for remote command execution, system recon, lateral movement. Detect: wmic process call create / /node:."
+        },
+        {
+          "heading": "msbuild.exe · INLINE C# (BYPASS)",
+          "body": "Legit: .NET build tool. Abuse: compiles and runs inline C# embedded in a project file (fileless, AppLocker bypass). Detect: msbuild + a suspicious .xml/.csproj path."
+        },
+        {
+          "heading": "installutil.exe · UNINSTALL EXEC",
+          "body": "Legit: .NET service install. Abuse: runs code via an assembly's uninstall method, bypassing app control. Detect: installutil /logfile= /U."
+        },
+        {
+          "heading": "cscript / wscript.exe · SCRIPT EXEC",
+          "body": "Legit: runs VBScript/JScript. Abuse: executes malicious .vbs/.js (macro droppers). Detect: wscript/cscript + a script in a temp folder."
+        },
+        {
+          "heading": "schtasks.exe · PERSISTENCE",
+          "body": "Legit: scheduled task management. Abuse: persistence that runs at boot, execution as SYSTEM. Detect: schtasks /create + suspicious command/location."
+        },
+        {
+          "heading": "reg.exe · PERSISTENCE / DEFENSE EVASION",
+          "body": "Legit: registry editing. Abuse: persistence via Run keys, disabling Defender, reading credentials. Detect: reg add ...\\Run, Defender keys."
+        },
+        {
+          "heading": "net.exe / net1.exe · ACCOUNTS / RECON",
+          "body": "Legit: user/share management. Abuse: add accounts (net user /add), add to groups (net localgroup administrators), recon. Detect: net user/group + /add."
+        },
+        {
+          "heading": "sc.exe · MALICIOUS SERVICE",
+          "body": "Legit: service control. Abuse: creates a malicious service for persistence + SYSTEM exec. Detect: sc create + suspicious binPath."
+        },
+        {
+          "heading": "msiexec.exe · REMOTE MSI",
+          "body": "Legit: MSI package install. Abuse: downloads and runs a remote/malicious MSI (/i http...). Detect: msiexec /i http(s)."
+        },
+        {
+          "heading": "forfiles.exe · PROXY EXEC",
+          "body": "Legit: run a command per file. Abuse: /c proxies a command to launch another exe (parent-process hiding). Detect: forfiles /c cmd."
+        },
+        {
+          "heading": "cmstp.exe · UAC BYPASS",
+          "body": "Legit: installs Connection Manager profiles. Abuse: runs malicious .inf/.sct, UAC bypass. Detect: cmstp /s + inf."
+        },
+        {
+          "heading": "regasm / regsvcs.exe · ASSEMBLY EXEC",
+          "body": "Legit: .NET assembly registration. Abuse: runs code during register/unregister, AppLocker bypass. Detect: regasm/regsvcs + a suspicious dll."
+        },
+        {
+          "heading": "odbcconf.exe · DLL EXEC",
+          "body": "Legit: ODBC driver configuration. Abuse: runs a DLL via the REGSVR action (proxy exec). Detect: odbcconf + a dll path."
+        },
+        {
+          "heading": "at.exe · PERSISTENCE (LEGACY)",
+          "body": "Legit: legacy task scheduler. Abuse: timed execution for persistence (the old form of schtasks). Detect: at + command; its use on modern systems is itself suspicious."
+        }
+      ]
+    }
+  },
+  {
+    "slug": "syslog-severity-facility",
+    "title": {
+      "tr": "Syslog Severity & Facility Kodları",
+      "en": "Syslog Severity & Facility Codes"
+    },
+    "category": {
+      "tr": "LİNUX / LOG",
+      "en": "LINUX / LOG"
+    },
+    "type": "cheatsheet",
+    "data": {
+      "tr": [
+        {
+          "cmd": "0 · Emergency",
+          "desc": "Sistem kullanılamaz durumda. En yüksek öncelik."
+        },
+        {
+          "cmd": "1 · Alert",
+          "desc": "Hemen müdahale gerekir."
+        },
+        {
+          "cmd": "2 · Critical",
+          "desc": "Kritik durum (ör. donanım/servis hatası)."
+        },
+        {
+          "cmd": "3 · Error",
+          "desc": "Bir hata oluştu."
+        },
+        {
+          "cmd": "4 · Warning",
+          "desc": "Uyarı; henüz hata değil ama dikkat."
+        },
+        {
+          "cmd": "5 · Notice",
+          "desc": "Normal ama dikkat çekici olay."
+        },
+        {
+          "cmd": "6 · Informational",
+          "desc": "Bilgilendirme mesajı."
+        },
+        {
+          "cmd": "7 · Debug",
+          "desc": "Geliştirici / hata ayıklama ayrıntısı."
+        },
+        {
+          "cmd": "Facility 0 · kern",
+          "desc": "Çekirdek (kernel) mesajları."
+        },
+        {
+          "cmd": "Facility 1 · user",
+          "desc": "Kullanıcı seviyesi mesajlar."
+        },
+        {
+          "cmd": "Facility 4 · auth",
+          "desc": "Güvenlik/yetkilendirme olayları (girişler)."
+        },
+        {
+          "cmd": "Facility 10 · authpriv",
+          "desc": "Hassas yetkilendirme; genelde /var/log/auth.log. SSH brute force burada."
+        },
+        {
+          "cmd": "Facility 3 · daemon",
+          "desc": "Sistem servisleri (daemon'lar)."
+        },
+        {
+          "cmd": "Facility 16–23 · local0–7",
+          "desc": "Uygulamalara ayrılmış özel kanallar."
+        },
+        {
+          "cmd": "PRI = Facility × 8 + Severity",
+          "desc": "Mesaj başındaki <PRI> böyle hesaplanır. Örn: authpriv(10)×8 + warning(4) = <84>."
+        },
+        {
+          "cmd": "SOC ipucu",
+          "desc": "auth/authpriv + düşük severity (0–3) = öncelikli incele. SSH brute force genelde authpriv üzerinde tekrarlayan 'Failed password'."
+        }
+      ],
+      "en": [
+        {
+          "cmd": "0 · Emergency",
+          "desc": "System is unusable. Highest priority."
+        },
+        {
+          "cmd": "1 · Alert",
+          "desc": "Action must be taken immediately."
+        },
+        {
+          "cmd": "2 · Critical",
+          "desc": "Critical condition (e.g. hardware/service failure)."
+        },
+        {
+          "cmd": "3 · Error",
+          "desc": "An error occurred."
+        },
+        {
+          "cmd": "4 · Warning",
+          "desc": "Warning; not an error yet, but notable."
+        },
+        {
+          "cmd": "5 · Notice",
+          "desc": "Normal but significant event."
+        },
+        {
+          "cmd": "6 · Informational",
+          "desc": "Informational message."
+        },
+        {
+          "cmd": "7 · Debug",
+          "desc": "Developer / debugging detail."
+        },
+        {
+          "cmd": "Facility 0 · kern",
+          "desc": "Kernel messages."
+        },
+        {
+          "cmd": "Facility 1 · user",
+          "desc": "User-level messages."
+        },
+        {
+          "cmd": "Facility 4 · auth",
+          "desc": "Security/authorization events (logins)."
+        },
+        {
+          "cmd": "Facility 10 · authpriv",
+          "desc": "Sensitive authorization; usually /var/log/auth.log. SSH brute force lives here."
+        },
+        {
+          "cmd": "Facility 3 · daemon",
+          "desc": "System services (daemons)."
+        },
+        {
+          "cmd": "Facility 16–23 · local0–7",
+          "desc": "Custom channels reserved for applications."
+        },
+        {
+          "cmd": "PRI = Facility × 8 + Severity",
+          "desc": "The leading <PRI> is computed this way. E.g. authpriv(10)×8 + warning(4) = <84>."
+        },
+        {
+          "cmd": "SOC tip",
+          "desc": "auth/authpriv + low severity (0–3) = investigate first. SSH brute force is usually repeated 'Failed password' on authpriv."
+        }
+      ]
+    }
+  },
+  {
+    "slug": "windows-event-id",
+    "title": {
+      "tr": "Windows Security Log Rehberi",
+      "en": "Windows Security Log Guide"
+    },
+    "category": {
+      "tr": "WINDOWS / SOC",
+      "en": "WINDOWS / SOC"
+    },
+    "type": "grouped",
+    "data": {
+      "tr": [
+        {
+          "group": "Oturum Olayları",
+          "note": "Logon / Session",
+          "items": [
+            {
+              "code": "4624",
+              "name": "Başarılı Giriş",
+              "desc": "Hesap başarıyla giriş yaptı. Logon Type nasıl girdiğini söyler."
+            },
+            {
+              "code": "4625",
+              "name": "Başarısız Giriş",
+              "desc": "Giriş denemesi başarısız. Status/Sub-Status alanı nedeni (bkz. Giriş Hata Kodları)."
+            },
+            {
+              "code": "4647",
+              "name": "Çıkış (Logoff)",
+              "desc": "Kullanıcı kendisi çıkış yaptı. 4624 ile Logon ID eşleştir → oturum süresi."
+            },
+            {
+              "code": "4778",
+              "name": "RDP Yeniden Bağlan",
+              "desc": "RDP oturumuna yeniden bağlanıldı."
+            },
+            {
+              "code": "4779",
+              "name": "RDP Bağlantı Kesildi",
+              "desc": "RDP oturumu bağlantısı kesildi (oturum kapanmadı)."
+            },
+            {
+              "code": "4800",
+              "name": "Bilgisayar Kilitlendi",
+              "desc": "Ekran kilitlendi (Win+L)."
+            },
+            {
+              "code": "4801",
+              "name": "Kilit Açıldı",
+              "desc": "Ekran kilidi açıldı."
+            },
+            {
+              "code": "4802",
+              "name": "Ekran Koruyucu Açıldı",
+              "desc": "Ekran koruyucu devreye girdi."
+            },
+            {
+              "code": "4803",
+              "name": "Ekran Koruyucu Kapandı",
+              "desc": "Ekran koruyucu kapandı."
+            }
+          ]
+        },
+        {
+          "group": "Logon Type'ları",
+          "note": "Dışarıdan çok sayıda başarısız Type 3/10 = brute force",
+          "items": [
+            {
+              "code": "2",
+              "name": "Interactive",
+              "desc": "Klavye başında fiziksel giriş."
+            },
+            {
+              "code": "3",
+              "name": "Network",
+              "desc": "Paylaşılan klasöre (\\\\server\\share) erişim, SMB."
+            },
+            {
+              "code": "4",
+              "name": "Batch",
+              "desc": "Zamanlanmış görev (Task Scheduler) çalıştı."
+            },
+            {
+              "code": "5",
+              "name": "Service",
+              "desc": "Bir servis kendi hesabıyla başladı."
+            },
+            {
+              "code": "7",
+              "name": "Unlock",
+              "desc": "Kilitli ekran şifreyle açıldı."
+            },
+            {
+              "code": "8",
+              "name": "NetworkCleartext",
+              "desc": "Şifre ağda açık metin gitti (ör. IIS Basic Auth) — riskli."
+            },
+            {
+              "code": "10",
+              "name": "RemoteInteractive",
+              "desc": "RDP (Uzak Masaüstü) girişi."
+            },
+            {
+              "code": "11",
+              "name": "CachedInteractive",
+              "desc": "DC'ye ulaşılamadı; önbellekteki şifreyle girildi (ör. laptop dışarıda)."
+            }
+          ]
+        },
+        {
+          "group": "Giriş Hata Kodları (4625)",
+          "note": "0xC0000064 = username enumeration; tek kullanıcıya çok 0xC000006A = şifre deneme",
+          "items": [
+            {
+              "code": "0xC0000064",
+              "name": "Kullanıcı Yok",
+              "desc": "Böyle bir kullanıcı adı yok. Çok sayısı = username enumeration."
+            },
+            {
+              "code": "0xC000006A",
+              "name": "Şifre Yanlış",
+              "desc": "Kullanıcı adı doğru, şifre yanlış. Çok sayısı = şifre deneme (brute force)."
+            },
+            {
+              "code": "0xC0000234",
+              "name": "Hesap Kilitli",
+              "desc": "Hesap şu an kilitli."
+            },
+            {
+              "code": "0xC0000072",
+              "name": "Hesap Devre Dışı",
+              "desc": "Hesap devre dışı."
+            },
+            {
+              "code": "0xC000006F",
+              "name": "Saat/Gün Dışı",
+              "desc": "İzin verilen saat/gün dışında giriş denemesi."
+            },
+            {
+              "code": "0xC0000070",
+              "name": "İzinsiz Bilgisayar",
+              "desc": "Bu bilgisayardan giriş yapma izni yok."
+            },
+            {
+              "code": "0xC0000193",
+              "name": "Hesap Süresi Doldu",
+              "desc": "Hesabın süresi dolmuş."
+            },
+            {
+              "code": "0xC0000071",
+              "name": "Şifre Süresi Doldu",
+              "desc": "Şifrenin süresi dolmuş."
+            },
+            {
+              "code": "0xC0000133",
+              "name": "Saat Farkı",
+              "desc": "Bilgisayar ile DC'nin saati çok farklı."
+            },
+            {
+              "code": "0xC0000224",
+              "name": "Şifre Değişmeli",
+              "desc": "Kullanıcı bir sonraki girişte şifresini değiştirmeli."
+            },
+            {
+              "code": "0xC0000225",
+              "name": "Windows Hatası",
+              "desc": "Windows hatası, güvenlik riski değil."
+            },
+            {
+              "code": "0xC000015B",
+              "name": "Giriş Türü Yok",
+              "desc": "Kullanıcıya bu giriş türü için yetki verilmemiş (ör. RDP hakkı yok)."
+            }
+          ]
+        },
+        {
+          "group": "Hesap Yönetimi",
+          "note": "En çok 4720 (arka kapı), 4724 (şifre sıfırlama), 4740 (brute force izi)",
+          "items": [
+            {
+              "code": "4720",
+              "name": "Hesap Oluşturuldu",
+              "desc": "Yeni kullanıcı hesabı oluşturuldu. Beklenmeyen = arka kapı şüphesi."
+            },
+            {
+              "code": "4722",
+              "name": "Hesap Etkinleştirildi",
+              "desc": "Devre dışı hesap aktif edildi. Atıl hesabın etkinleşmesi şüphelidir."
+            },
+            {
+              "code": "4723",
+              "name": "Şifre Değiştirildi (kendi)",
+              "desc": "Kullanıcı kendi şifresini değiştirdi."
+            },
+            {
+              "code": "4724",
+              "name": "Şifre Sıfırlandı",
+              "desc": "Yetkili biri başkasının şifresini sıfırladı. Hesap devralma olabilir."
+            },
+            {
+              "code": "4725",
+              "name": "Hesap Devre Dışı",
+              "desc": "Hesap devre dışı bırakıldı."
+            },
+            {
+              "code": "4726",
+              "name": "Hesap Silindi",
+              "desc": "Hesap silindi. İz temizleme/sabotaj olabilir."
+            },
+            {
+              "code": "4738",
+              "name": "Hesap Değiştirildi",
+              "desc": "Hesabın bir özelliği değişti (ör. açıklama, şifre süresi). UAC bayrağı = kalıcılık."
+            },
+            {
+              "code": "4740",
+              "name": "Hesap Kilitlendi",
+              "desc": "Çok fazla yanlış şifre → kilit. Brute force izi."
+            },
+            {
+              "code": "4767",
+              "name": "Kilit Açıldı",
+              "desc": "Kilitli hesabın kilidi açıldı. 4740 ile birlikte bak."
+            },
+            {
+              "code": "4781",
+              "name": "Hesap Adı Değişti",
+              "desc": "Hesabın adı değiştirildi. Gizleme için yeniden adlandırma olabilir."
+            }
+          ]
+        },
+        {
+          "group": "Grup Değişiklikleri",
+          "note": "Sıra: Local / Global / Universal. Dağıtım grupları 4744–4763 (nadiren önemli)",
+          "items": [
+            {
+              "code": "4731/4727/4754",
+              "name": "Grup Oluşturuldu",
+              "desc": "Güvenlik grubu oluşturuldu (Local / Global / Universal)."
+            },
+            {
+              "code": "4735/4737/4755",
+              "name": "Grup Değiştirildi",
+              "desc": "Grup özelliği değişti (Local / Global / Universal)."
+            },
+            {
+              "code": "4734/4730/4758",
+              "name": "Grup Silindi",
+              "desc": "Güvenlik grubu silindi (Local / Global / Universal)."
+            },
+            {
+              "code": "4732/4728/4756",
+              "name": "Üye Eklendi",
+              "desc": "Gruba üye eklendi. 4732=local Administrators, 4728/4756=Domain Admins → yetki yükseltme!"
+            },
+            {
+              "code": "4733/4729/4757",
+              "name": "Üye Çıkarıldı",
+              "desc": "Gruptan üye çıkarıldı (Local / Global / Universal)."
+            }
+          ]
+        },
+        {
+          "group": "Kerberos (DC Kimlik Doğrulama)",
+          "note": "Çok 4771 = domain brute force; 4768'de RC4 (0x17) = AS-REP roasting",
+          "items": [
+            {
+              "code": "4768",
+              "name": "TGT İstendi",
+              "desc": "Kullanıcı DC'den TGT (giriş bileti) istedi — domain girişinin başlangıcı."
+            },
+            {
+              "code": "4771",
+              "name": "Ön-Doğrulama Hatası",
+              "desc": "Kerberos ön doğrulaması başarısız (genelde yanlış şifre). Nedeni Kerberos hata kodunda."
+            },
+            {
+              "code": "4820",
+              "name": "TGT Reddedildi",
+              "desc": "Cihaz erişim kısıtlamalarına uymadığı için TGT reddedildi."
+            }
+          ]
+        },
+        {
+          "group": "Kerberos Hata Kodları (4771/4768)",
+          "note": "En çok 0x18 (yanlış şifre) ve 0x6 (olmayan kullanıcı) ile ilgilenirsin",
+          "items": [
+            {
+              "code": "0x6",
+              "name": "Kullanıcı Yok",
+              "desc": "Kullanıcı adı yanlış / yok."
+            },
+            {
+              "code": "0x7",
+              "name": "Yeni Bilgisayar",
+              "desc": "Yeni bilgisayar hesabı (henüz kopyalanmamış olabilir)."
+            },
+            {
+              "code": "0x9",
+              "name": "Şifre Sıfırlama",
+              "desc": "Admin şifreyi sıfırlamalı."
+            },
+            {
+              "code": "0xC",
+              "name": "Giriş Kısıtlı",
+              "desc": "Bu bilgisayardan giriş kısıtlı."
+            },
+            {
+              "code": "0x12",
+              "name": "Hesap Sorunu",
+              "desc": "Hesap devre dışı, süresi dolmuş, kilitli veya saat kısıtlaması."
+            },
+            {
+              "code": "0x17",
+              "name": "Şifre Süresi Doldu",
+              "desc": "Şifrenin süresi dolmuş."
+            },
+            {
+              "code": "0x18",
+              "name": "Şifre Yanlış",
+              "desc": "Şifre yanlış."
+            },
+            {
+              "code": "0x20",
+              "name": "Bilet Süresi Doldu",
+              "desc": "Bilet süresi doldu (bilgisayar hesaplarında sık, normal)."
+            },
+            {
+              "code": "0x25",
+              "name": "Saat Farkı",
+              "desc": "Bilgisayarın saati DC ile çok farklı."
+            }
+          ]
+        }
+      ],
+      "en": [
+        {
+          "group": "Logon / Session",
+          "note": "Sign in/out events",
+          "items": [
+            {
+              "code": "4624",
+              "name": "Successful Logon",
+              "desc": "Account logged on. Logon Type tells how it signed in."
+            },
+            {
+              "code": "4625",
+              "name": "Failed Logon",
+              "desc": "Logon attempt failed. Status/Sub-Status = the reason (see Logon Failure Codes)."
+            },
+            {
+              "code": "4647",
+              "name": "Logoff",
+              "desc": "User-initiated logoff. Match Logon ID with 4624 → session duration."
+            },
+            {
+              "code": "4778",
+              "name": "RDP Reconnect",
+              "desc": "Reconnected to an RDP session."
+            },
+            {
+              "code": "4779",
+              "name": "RDP Disconnect",
+              "desc": "RDP session disconnected (session not closed)."
+            },
+            {
+              "code": "4800",
+              "name": "Workstation Locked",
+              "desc": "Screen locked (Win+L)."
+            },
+            {
+              "code": "4801",
+              "name": "Workstation Unlocked",
+              "desc": "Screen unlocked."
+            },
+            {
+              "code": "4802",
+              "name": "Screensaver On",
+              "desc": "Screensaver started."
+            },
+            {
+              "code": "4803",
+              "name": "Screensaver Off",
+              "desc": "Screensaver dismissed."
+            }
+          ]
+        },
+        {
+          "group": "Logon Types",
+          "note": "Many failed Type 3/10 from outside = brute force",
+          "items": [
+            {
+              "code": "2",
+              "name": "Interactive",
+              "desc": "Physical logon at the keyboard."
+            },
+            {
+              "code": "3",
+              "name": "Network",
+              "desc": "Access to a share (\\\\server\\share), SMB."
+            },
+            {
+              "code": "4",
+              "name": "Batch",
+              "desc": "A scheduled task (Task Scheduler) ran."
+            },
+            {
+              "code": "5",
+              "name": "Service",
+              "desc": "A service started with its own account."
+            },
+            {
+              "code": "7",
+              "name": "Unlock",
+              "desc": "Locked screen unlocked with a password."
+            },
+            {
+              "code": "8",
+              "name": "NetworkCleartext",
+              "desc": "Password sent in cleartext (e.g. IIS Basic Auth) — risky."
+            },
+            {
+              "code": "10",
+              "name": "RemoteInteractive",
+              "desc": "RDP (Remote Desktop) logon."
+            },
+            {
+              "code": "11",
+              "name": "CachedInteractive",
+              "desc": "DC unreachable; logged in with cached password (e.g. laptop offline)."
+            }
+          ]
+        },
+        {
+          "group": "Logon Failure Codes (4625)",
+          "note": "0xC0000064 = username enumeration; many 0xC000006A on one user = password guessing",
+          "items": [
+            {
+              "code": "0xC0000064",
+              "name": "No Such User",
+              "desc": "No such username. Many = username enumeration."
+            },
+            {
+              "code": "0xC000006A",
+              "name": "Wrong Password",
+              "desc": "Username correct, password wrong. Many = brute force."
+            },
+            {
+              "code": "0xC0000234",
+              "name": "Account Locked",
+              "desc": "Account is currently locked."
+            },
+            {
+              "code": "0xC0000072",
+              "name": "Account Disabled",
+              "desc": "Account is disabled."
+            },
+            {
+              "code": "0xC000006F",
+              "name": "Outside Hours",
+              "desc": "Logon attempt outside allowed hours/days."
+            },
+            {
+              "code": "0xC0000070",
+              "name": "Workstation Denied",
+              "desc": "Not allowed to log on from this computer."
+            },
+            {
+              "code": "0xC0000193",
+              "name": "Account Expired",
+              "desc": "Account has expired."
+            },
+            {
+              "code": "0xC0000071",
+              "name": "Password Expired",
+              "desc": "Password has expired."
+            },
+            {
+              "code": "0xC0000133",
+              "name": "Clock Skew",
+              "desc": "Computer and DC clocks differ too much."
+            },
+            {
+              "code": "0xC0000224",
+              "name": "Must Change Pwd",
+              "desc": "User must change password at next logon."
+            },
+            {
+              "code": "0xC0000225",
+              "name": "Windows Bug",
+              "desc": "A Windows bug, not a security risk."
+            },
+            {
+              "code": "0xC000015B",
+              "name": "Logon Type Denied",
+              "desc": "User not granted this logon type (e.g. no RDP rights)."
+            }
+          ]
+        },
+        {
+          "group": "Account Mgmt",
+          "note": "Most important: 4720 (backdoor), 4724 (reset), 4740 (brute-force trail)",
+          "items": [
+            {
+              "code": "4720",
+              "name": "Account Created",
+              "desc": "New user account created. Unexpected = possible backdoor."
+            },
+            {
+              "code": "4722",
+              "name": "Account Enabled",
+              "desc": "A disabled account was enabled. Enabling a dormant account is suspicious."
+            },
+            {
+              "code": "4723",
+              "name": "Password Changed (self)",
+              "desc": "User changed their own password."
+            },
+            {
+              "code": "4724",
+              "name": "Password Reset",
+              "desc": "A privileged user reset someone else's password. Can mean account takeover."
+            },
+            {
+              "code": "4725",
+              "name": "Account Disabled",
+              "desc": "Account was disabled."
+            },
+            {
+              "code": "4726",
+              "name": "Account Deleted",
+              "desc": "Account deleted. Can be track-covering/sabotage."
+            },
+            {
+              "code": "4738",
+              "name": "Account Changed",
+              "desc": "An account property changed (e.g. description, password expiry). UAC flag = persistence."
+            },
+            {
+              "code": "4740",
+              "name": "Account Locked Out",
+              "desc": "Too many wrong passwords → lock. A brute-force trail."
+            },
+            {
+              "code": "4767",
+              "name": "Account Unlocked",
+              "desc": "A locked account was unlocked. Review with 4740."
+            },
+            {
+              "code": "4781",
+              "name": "Account Renamed",
+              "desc": "Account renamed. Can be renaming to hide it."
+            }
+          ]
+        },
+        {
+          "group": "Group Changes",
+          "note": "Order: Local / Global / Universal. Distribution groups 4744–4763 (rarely relevant)",
+          "items": [
+            {
+              "code": "4731/4727/4754",
+              "name": "Group Created",
+              "desc": "Security group created (Local / Global / Universal)."
+            },
+            {
+              "code": "4735/4737/4755",
+              "name": "Group Changed",
+              "desc": "A group property changed (Local / Global / Universal)."
+            },
+            {
+              "code": "4734/4730/4758",
+              "name": "Group Deleted",
+              "desc": "Security group deleted (Local / Global / Universal)."
+            },
+            {
+              "code": "4732/4728/4756",
+              "name": "Member Added",
+              "desc": "Member added. 4732=local Administrators, 4728/4756=Domain Admins → privilege escalation!"
+            },
+            {
+              "code": "4733/4729/4757",
+              "name": "Member Removed",
+              "desc": "Member removed from a group (Local / Global / Universal)."
+            }
+          ]
+        },
+        {
+          "group": "Kerberos (DC Auth)",
+          "note": "Many 4771 = domain brute force; RC4 (0x17) on 4768 = AS-REP roasting",
+          "items": [
+            {
+              "code": "4768",
+              "name": "TGT Requested",
+              "desc": "User requested a TGT (logon ticket) from the DC — start of domain logon."
+            },
+            {
+              "code": "4771",
+              "name": "Pre-Auth Failed",
+              "desc": "Kerberos pre-authentication failed (usually wrong password). Reason is in the Kerberos failure code."
+            },
+            {
+              "code": "4820",
+              "name": "TGT Denied",
+              "desc": "TGT denied because the device did not meet access restrictions."
+            }
+          ]
+        },
+        {
+          "group": "Kerberos Failure Codes (4771/4768)",
+          "note": "You mostly care about 0x18 (wrong password) and 0x6 (no such user)",
+          "items": [
+            {
+              "code": "0x6",
+              "name": "No Such User",
+              "desc": "Username wrong / does not exist."
+            },
+            {
+              "code": "0x7",
+              "name": "New Computer",
+              "desc": "New computer account (may not be replicated yet)."
+            },
+            {
+              "code": "0x9",
+              "name": "Must Reset Pwd",
+              "desc": "Admin must reset the password."
+            },
+            {
+              "code": "0xC",
+              "name": "Logon Restricted",
+              "desc": "Logon from this computer is restricted."
+            },
+            {
+              "code": "0x12",
+              "name": "Account Issue",
+              "desc": "Account disabled, expired, locked, or time restriction."
+            },
+            {
+              "code": "0x17",
+              "name": "Password Expired",
+              "desc": "Password has expired."
+            },
+            {
+              "code": "0x18",
+              "name": "Wrong Password",
+              "desc": "Password is wrong."
+            },
+            {
+              "code": "0x20",
+              "name": "Ticket Expired",
+              "desc": "Ticket expired (common/normal for computer accounts)."
+            },
+            {
+              "code": "0x25",
+              "name": "Clock Skew",
+              "desc": "Computer clock differs too much from the DC."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "slug": "http-status-kodlari",
+    "title": {
+      "tr": "HTTP Durum Kodları",
+      "en": "HTTP Status Codes"
+    },
+    "category": {
+      "tr": "WEB / API",
+      "en": "WEB / API"
+    },
+    "type": "grouped",
+    "data": {
+      "tr": [
+        {
+          "group": "2xx Başarılı",
+          "note": "İstek işlendi",
+          "items": [
+            {
+              "code": "200",
+              "name": "OK",
+              "desc": "İstek başarılı; gövdede veri var."
+            },
+            {
+              "code": "201",
+              "name": "Created",
+              "desc": "Kaynak oluşturuldu (genelde POST sonrası)."
+            },
+            {
+              "code": "204",
+              "name": "No Content",
+              "desc": "Başarılı ama dönecek gövde yok (ör. DELETE)."
+            }
+          ]
+        },
+        {
+          "group": "3xx Yönlendirme",
+          "items": [
+            {
+              "code": "301",
+              "name": "Moved Permanently",
+              "desc": "Kalıcı taşındı; yeni URL. Open redirect açığında phishing riski."
+            },
+            {
+              "code": "302",
+              "name": "Found",
+              "desc": "Geçici yönlendirme; login sonrası sık görülür."
+            },
+            {
+              "code": "304",
+              "name": "Not Modified",
+              "desc": "İçerik değişmedi; önbellekteki sürümü kullan."
+            }
+          ]
+        },
+        {
+          "group": "4xx İstemci Hatası",
+          "note": "İstek/istemci kaynaklı",
+          "items": [
+            {
+              "code": "400",
+              "name": "Bad Request",
+              "desc": "Bozuk istek. Çok sayısı = fuzzing/scanner."
+            },
+            {
+              "code": "401",
+              "name": "Unauthorized",
+              "desc": "Kimlik yok/geçersiz. Sel = brute force sinyali."
+            },
+            {
+              "code": "403",
+              "name": "Forbidden",
+              "desc": "Kimlik var ama yetki yok. Çok sayısı = yetki tarama."
+            },
+            {
+              "code": "404",
+              "name": "Not Found",
+              "desc": "Kaynak yok. Patlaması = dizin tarama (gobuster/dirb)."
+            },
+            {
+              "code": "405",
+              "name": "Method Not Allowed",
+              "desc": "Metot kabul edilmiyor. PUT/DELETE denemesi şüpheli."
+            },
+            {
+              "code": "408",
+              "name": "Request Timeout",
+              "desc": "İstek zamanında gelmedi. Slowloris DoS olabilir."
+            },
+            {
+              "code": "409",
+              "name": "Conflict",
+              "desc": "Kaynak çakışması (duplicate/eşzamanlılık)."
+            },
+            {
+              "code": "429",
+              "name": "Too Many Requests",
+              "desc": "Rate limit aşıldı. Brute force/scraping savunması."
+            }
+          ]
+        },
+        {
+          "group": "5xx Sunucu Hatası",
+          "note": "Sunucu kaynaklı",
+          "items": [
+            {
+              "code": "500",
+              "name": "Internal Server Error",
+              "desc": "Beklenmeyen hata. Artış = bug ya da injection denemesi."
+            },
+            {
+              "code": "501",
+              "name": "Not Implemented",
+              "desc": "Sunucu bu metodu/özelliği desteklemiyor."
+            },
+            {
+              "code": "502",
+              "name": "Bad Gateway",
+              "desc": "Upstream'den geçersiz yanıt (backend down)."
+            },
+            {
+              "code": "503",
+              "name": "Service Unavailable",
+              "desc": "Geçici hizmet dışı (yük/bakım/DDoS)."
+            },
+            {
+              "code": "504",
+              "name": "Gateway Timeout",
+              "desc": "Upstream zamanında yanıt vermedi."
+            }
+          ]
+        },
+        {
+          "group": "1xx Bilgi",
+          "items": [
+            {
+              "code": "100",
+              "name": "Continue",
+              "desc": "İlk kısım alındı; devam et (büyük POST, Expect: 100-continue)."
+            }
+          ]
+        }
+      ],
+      "en": [
+        {
+          "group": "2xx Success",
+          "note": "Request handled",
+          "items": [
+            {
+              "code": "200",
+              "name": "OK",
+              "desc": "Request succeeded; data in the body."
+            },
+            {
+              "code": "201",
+              "name": "Created",
+              "desc": "A resource was created (usually after POST)."
+            },
+            {
+              "code": "204",
+              "name": "No Content",
+              "desc": "Succeeded but no body to return (e.g. DELETE)."
+            }
+          ]
+        },
+        {
+          "group": "3xx Redirect",
+          "items": [
+            {
+              "code": "301",
+              "name": "Moved Permanently",
+              "desc": "Moved for good; new URL. Phishing risk if open-redirect exists."
+            },
+            {
+              "code": "302",
+              "name": "Found",
+              "desc": "Temporary redirect; common after login."
+            },
+            {
+              "code": "304",
+              "name": "Not Modified",
+              "desc": "Unchanged; use the cached version."
+            }
+          ]
+        },
+        {
+          "group": "4xx Client Error",
+          "note": "Client-side",
+          "items": [
+            {
+              "code": "400",
+              "name": "Bad Request",
+              "desc": "Malformed request. Many = fuzzing/scanner."
+            },
+            {
+              "code": "401",
+              "name": "Unauthorized",
+              "desc": "Missing/invalid auth. A flood = brute force signal."
+            },
+            {
+              "code": "403",
+              "name": "Forbidden",
+              "desc": "Authenticated but not authorized. Many = privilege probing."
+            },
+            {
+              "code": "404",
+              "name": "Not Found",
+              "desc": "No such resource. A burst = directory scanning (gobuster/dirb)."
+            },
+            {
+              "code": "405",
+              "name": "Method Not Allowed",
+              "desc": "Method not accepted. PUT/DELETE attempts are suspicious."
+            },
+            {
+              "code": "408",
+              "name": "Request Timeout",
+              "desc": "Request not sent in time. Could be Slowloris DoS."
+            },
+            {
+              "code": "409",
+              "name": "Conflict",
+              "desc": "Resource conflict (duplicate/concurrency)."
+            },
+            {
+              "code": "429",
+              "name": "Too Many Requests",
+              "desc": "Rate limit exceeded. Defense vs brute force/scraping."
+            }
+          ]
+        },
+        {
+          "group": "5xx Server Error",
+          "note": "Server-side",
+          "items": [
+            {
+              "code": "500",
+              "name": "Internal Server Error",
+              "desc": "Unexpected server error. A spike = bug or injection attempt."
+            },
+            {
+              "code": "501",
+              "name": "Not Implemented",
+              "desc": "Server does not support this method/feature."
+            },
+            {
+              "code": "502",
+              "name": "Bad Gateway",
+              "desc": "Invalid response from upstream (backend down)."
+            },
+            {
+              "code": "503",
+              "name": "Service Unavailable",
+              "desc": "Temporarily unavailable (overload/maintenance/DDoS)."
+            },
+            {
+              "code": "504",
+              "name": "Gateway Timeout",
+              "desc": "Upstream did not respond in time."
+            }
+          ]
+        },
+        {
+          "group": "1xx Informational",
+          "items": [
+            {
+              "code": "100",
+              "name": "Continue",
+              "desc": "First part received; continue (large POST, Expect: 100-continue)."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "slug": "sysmon-event-id",
+    "title": {
+      "tr": "Sysmon Event ID'leri",
+      "en": "Sysmon Event IDs"
+    },
+    "category": {
+      "tr": "WINDOWS / SOC",
+      "en": "WINDOWS / SOC"
+    },
+    "type": "grouped",
+    "data": {
+      "tr": [
+        {
+          "group": "Süreç (Process)",
+          "note": "Event 1 tespitin temeli; 10 LSASS erişimi = kimlik dökme (mimikatz)",
+          "items": [
+            {
+              "code": "1",
+              "name": "Process Create",
+              "desc": "Süreç başlatıldı. Komut satırı + hash + EBEVEYN süreci loglar. Tespitin bel kemiği (LOLBAS, şüpheli ebeveyn-çocuk)."
+            },
+            {
+              "code": "5",
+              "name": "Process Terminated",
+              "desc": "Süreç sonlandı. Yaşam süresi / zincir analizinde kullanılır."
+            },
+            {
+              "code": "10",
+              "name": "ProcessAccess",
+              "desc": "Bir süreç başka bir sürece erişti (GrantedAccess). lsass.exe'ye erişim = kimlik bilgisi dökme (mimikatz)."
+            },
+            {
+              "code": "8",
+              "name": "CreateRemoteThread",
+              "desc": "Başka sürece thread enjekte edildi. Kod enjeksiyonu / process injection sinyali."
+            },
+            {
+              "code": "25",
+              "name": "ProcessTampering",
+              "desc": "Süreç görüntüsü kurcalandı (process hollowing/herpaderping)."
+            }
+          ]
+        },
+        {
+          "group": "Ağ (Network)",
+          "note": "3 = C2 bağlantısı; 22 = DNS tunneling/C2 çözümleme",
+          "items": [
+            {
+              "code": "3",
+              "name": "Network Connection",
+              "desc": "TCP/UDP bağlantısı (süreç → IP:port). C2 ve veri sızıntısı tespiti."
+            },
+            {
+              "code": "22",
+              "name": "DNS Query",
+              "desc": "DNS sorgusu (hangi süreç hangi domaini sordu). DNS tunneling / C2 çözümleme."
+            }
+          ]
+        },
+        {
+          "group": "Dosya (File)",
+          "note": "2 (timestomp) ve 23 (silme) = anti-forensics; 9 = ham disk / NTDS okuma",
+          "items": [
+            {
+              "code": "11",
+              "name": "FileCreate",
+              "desc": "Dosya oluşturuldu/üzerine yazıldı. Düşürülen payload'lar burada görünür."
+            },
+            {
+              "code": "2",
+              "name": "File Time Changed",
+              "desc": "Dosya oluşturma zamanı değiştirildi (timestomping — anti-forensics)."
+            },
+            {
+              "code": "15",
+              "name": "FileCreateStreamHash",
+              "desc": "Alternatif veri akışı (ADS) oluştu. Zone.Identifier = internetten indirildi işareti; gizleme."
+            },
+            {
+              "code": "23",
+              "name": "FileDelete",
+              "desc": "Dosya silindi (arşivlenerek loglanır). İz temizleme sinyali."
+            },
+            {
+              "code": "9",
+              "name": "RawAccessRead",
+              "desc": "Diskten ham okuma (\\\\.\\ ile, dosya sistemini atlayarak). NTDS.dit/SAM kimlik hırsızlığı."
+            }
+          ]
+        },
+        {
+          "group": "Kayıt Defteri (Registry)",
+          "note": "13 Run anahtarına yazma = kalıcılık",
+          "items": [
+            {
+              "code": "12",
+              "name": "Registry Create/Delete",
+              "desc": "Kayıt defteri anahtarı/nesnesi oluşturuldu veya silindi."
+            },
+            {
+              "code": "13",
+              "name": "Registry Value Set",
+              "desc": "Değer yazıldı. Run/RunOnce anahtarları = otomatik başlatma kalıcılığı."
+            },
+            {
+              "code": "14",
+              "name": "Registry Rename",
+              "desc": "Anahtar/değer yeniden adlandırıldı."
+            }
+          ]
+        },
+        {
+          "group": "Modül (Image/Driver)",
+          "note": "6 imzasız sürücü = rootkit; 7 imzasız/olağandışı DLL = DLL hijacking",
+          "items": [
+            {
+              "code": "7",
+              "name": "Image Loaded",
+              "desc": "DLL/modül yüklendi (imza + hash ile). DLL hijacking / imzasız DLL tespiti."
+            },
+            {
+              "code": "6",
+              "name": "Driver Loaded",
+              "desc": "Çekirdek sürücüsü yüklendi. İmzasız/şüpheli sürücü = rootkit şüphesi."
+            }
+          ]
+        },
+        {
+          "group": "Pipe & WMI",
+          "note": "17/18 named pipe = Cobalt Strike / yanal hareket; 19–21 = WMI kalıcılığı",
+          "items": [
+            {
+              "code": "17",
+              "name": "Pipe Created",
+              "desc": "Adlandırılmış pipe (named pipe) oluşturuldu. C2 framework'leri (Cobalt Strike) sık kullanır."
+            },
+            {
+              "code": "18",
+              "name": "Pipe Connected",
+              "desc": "Bir pipe'a bağlanıldı. Yanal hareket / süreçler arası iletişim."
+            },
+            {
+              "code": "19",
+              "name": "WMI Filter",
+              "desc": "WMI olay filtresi oluşturuldu (WMI kalıcılığının 1. parçası)."
+            },
+            {
+              "code": "20",
+              "name": "WMI Consumer",
+              "desc": "WMI olay tüketicisi oluşturuldu (çalışacak komut/script)."
+            },
+            {
+              "code": "21",
+              "name": "WMI Binding",
+              "desc": "Filtre + tüketici bağlandı = WMI kalıcılığı kuruldu. Üçü birlikte = alarm."
+            }
+          ]
+        },
+        {
+          "group": "Sysmon & Diğer",
+          "note": "4/16 = loglamayı kurcalama (evasion); 24 = pano çalma",
+          "items": [
+            {
+              "code": "4",
+              "name": "Sysmon Service State",
+              "desc": "Sysmon başladı/durdu. Durdurulması = loglamayı devre dışı bırakma (evasion)."
+            },
+            {
+              "code": "16",
+              "name": "Sysmon Config Changed",
+              "desc": "Sysmon yapılandırması değişti. Tespit kurallarını köreltme girişimi olabilir."
+            },
+            {
+              "code": "24",
+              "name": "ClipboardChange",
+              "desc": "Pano içeriği değişti. Pano yakalama (şifre/veri çalma)."
+            }
+          ]
+        }
+      ],
+      "en": [
+        {
+          "group": "Process",
+          "note": "Event 1 is the foundation; 10 access to LSASS = credential dumping (mimikatz)",
+          "items": [
+            {
+              "code": "1",
+              "name": "Process Create",
+              "desc": "A process started. Logs command line + hashes + PARENT process. Backbone of detection (LOLBAS, odd parent-child)."
+            },
+            {
+              "code": "5",
+              "name": "Process Terminated",
+              "desc": "A process ended. Used for lifetime / chain analysis."
+            },
+            {
+              "code": "10",
+              "name": "ProcessAccess",
+              "desc": "A process opened another (GrantedAccess). Access to lsass.exe = credential dumping (mimikatz)."
+            },
+            {
+              "code": "8",
+              "name": "CreateRemoteThread",
+              "desc": "A thread was injected into another process. Code/process injection signal."
+            },
+            {
+              "code": "25",
+              "name": "ProcessTampering",
+              "desc": "Process image tampered with (process hollowing/herpaderping)."
+            }
+          ]
+        },
+        {
+          "group": "Network",
+          "note": "3 = C2 connection; 22 = DNS tunneling/C2 resolution",
+          "items": [
+            {
+              "code": "3",
+              "name": "Network Connection",
+              "desc": "TCP/UDP connection (process → IP:port). C2 and exfiltration detection."
+            },
+            {
+              "code": "22",
+              "name": "DNS Query",
+              "desc": "DNS lookup (which process asked for which domain). DNS tunneling / C2 resolution."
+            }
+          ]
+        },
+        {
+          "group": "File",
+          "note": "2 (timestomp) and 23 (delete) = anti-forensics; 9 = raw disk / NTDS read",
+          "items": [
+            {
+              "code": "11",
+              "name": "FileCreate",
+              "desc": "File created/overwritten. Dropped payloads show up here."
+            },
+            {
+              "code": "2",
+              "name": "File Time Changed",
+              "desc": "File creation time changed (timestomping — anti-forensics)."
+            },
+            {
+              "code": "15",
+              "name": "FileCreateStreamHash",
+              "desc": "Alternate data stream (ADS) created. Zone.Identifier = downloaded-from-internet mark; hiding."
+            },
+            {
+              "code": "23",
+              "name": "FileDelete",
+              "desc": "File deleted (archived and logged). Track-covering signal."
+            },
+            {
+              "code": "9",
+              "name": "RawAccessRead",
+              "desc": "Raw read from disk (via \\\\.\\, bypassing the filesystem). NTDS.dit/SAM credential theft."
+            }
+          ]
+        },
+        {
+          "group": "Registry",
+          "note": "13 writing to a Run key = persistence",
+          "items": [
+            {
+              "code": "12",
+              "name": "Registry Create/Delete",
+              "desc": "A registry key/object was created or deleted."
+            },
+            {
+              "code": "13",
+              "name": "Registry Value Set",
+              "desc": "A value was written. Run/RunOnce keys = autostart persistence."
+            },
+            {
+              "code": "14",
+              "name": "Registry Rename",
+              "desc": "A key/value was renamed."
+            }
+          ]
+        },
+        {
+          "group": "Image / Driver",
+          "note": "6 unsigned driver = rootkit; 7 unsigned/unusual DLL = DLL hijacking",
+          "items": [
+            {
+              "code": "7",
+              "name": "Image Loaded",
+              "desc": "A DLL/module loaded (with signature + hash). DLL hijacking / unsigned-DLL detection."
+            },
+            {
+              "code": "6",
+              "name": "Driver Loaded",
+              "desc": "A kernel driver loaded. Unsigned/suspicious = possible rootkit."
+            }
+          ]
+        },
+        {
+          "group": "Pipe & WMI",
+          "note": "17/18 named pipes = Cobalt Strike / lateral movement; 19–21 = WMI persistence",
+          "items": [
+            {
+              "code": "17",
+              "name": "Pipe Created",
+              "desc": "A named pipe was created. C2 frameworks (Cobalt Strike) use these heavily."
+            },
+            {
+              "code": "18",
+              "name": "Pipe Connected",
+              "desc": "A pipe was connected. Lateral movement / inter-process comms."
+            },
+            {
+              "code": "19",
+              "name": "WMI Filter",
+              "desc": "A WMI event filter was created (part 1 of WMI persistence)."
+            },
+            {
+              "code": "20",
+              "name": "WMI Consumer",
+              "desc": "A WMI event consumer was created (the command/script to run)."
+            },
+            {
+              "code": "21",
+              "name": "WMI Binding",
+              "desc": "Filter + consumer bound = WMI persistence set up. All three together = alarm."
+            }
+          ]
+        },
+        {
+          "group": "Sysmon & Other",
+          "note": "4/16 = tampering with logging (evasion); 24 = clipboard theft",
+          "items": [
+            {
+              "code": "4",
+              "name": "Sysmon Service State",
+              "desc": "Sysmon started/stopped. Stopping it = disabling logging (evasion)."
+            },
+            {
+              "code": "16",
+              "name": "Sysmon Config Changed",
+              "desc": "Sysmon config changed. Could be an attempt to blind detection rules."
+            },
+            {
+              "code": "24",
+              "name": "ClipboardChange",
+              "desc": "Clipboard content changed. Clipboard capture (stealing passwords/data)."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "slug": "dosya-izinleri-win-linux",
+    "title": {
+      "tr": "Windows & Linux Dosya İzinleri",
+      "en": "Windows & Linux File Permissions"
+    },
+    "category": {
+      "tr": "SİSTEM / GÜVENLİK",
+      "en": "SYSTEM / SECURITY"
+    },
+    "type": "grouped",
+    "data": {
+      "tr": [
+        {
+          "group": "Linux — Temel İzinler (rwx)",
+          "note": "Her hane owner/group/other icin; r=4 w=2 x=1 toplanir",
+          "items": [
+            {
+              "code": "4",
+              "name": "r — read",
+              "desc": "Dosyada: icerigi oku. Dizinde: icindekileri listele (ls)."
+            },
+            {
+              "code": "2",
+              "name": "w — write",
+              "desc": "Dosyada: icerigi degistir. Dizinde: dosya ekle/sil/yeniden adlandir."
+            },
+            {
+              "code": "1",
+              "name": "x — execute",
+              "desc": "Dosyada: calistir (script/binary). Dizinde: icine gir (cd)."
+            },
+            {
+              "code": "0",
+              "name": "— (yok)",
+              "desc": "Hicbir izin yok."
+            }
+          ]
+        },
+        {
+          "group": "Linux — Octal Ornekleri",
+          "note": "chmod 755 dosya",
+          "items": [
+            {
+              "code": "755",
+              "name": "rwxr-xr-x",
+              "desc": "Sahip tam; grup+diger oku/calistir. Dizinler ve calistirabilirler icin tipik."
+            },
+            {
+              "code": "644",
+              "name": "rw-r--r--",
+              "desc": "Sahip oku/yaz; digerleri sadece oku. Normal dosyalar icin tipik."
+            },
+            {
+              "code": "600",
+              "name": "rw-------",
+              "desc": "Sadece sahip oku/yaz. SSH ozel anahtari (~/.ssh/id_rsa) — gevsekse SSH reddeder."
+            },
+            {
+              "code": "700",
+              "name": "rwx------",
+              "desc": "Sadece sahip her sey. Ozel dizinler (~/.ssh) icin."
+            },
+            {
+              "code": "777",
+              "name": "rwxrwxrwx",
+              "desc": "HERKES her seyi yapabilir. Neredeyse her zaman yanlis yapilandirma / acik."
+            },
+            {
+              "code": "400",
+              "name": "r--------",
+              "desc": "Sadece sahip okur. Salt-okunur anahtar/sertifika icin."
+            }
+          ]
+        },
+        {
+          "group": "Linux — Ozel Bitler",
+          "note": "4. hane: setuid=4 setgid=2 sticky=1 (or. chmod 4755)",
+          "items": [
+            {
+              "code": "4 · SUID",
+              "name": "Set User ID",
+              "desc": "Dosya SAHIBININ yetkisiyle calisir. root-sahipli SUID binary = ayricalik yukseltme hedefi. ls'te 's' (rwsr-xr-x). Av: find / -perm -4000."
+            },
+            {
+              "code": "2 · SGID",
+              "name": "Set Group ID",
+              "desc": "Dosya grup yetkisiyle calisir; dizinde yeni dosyalar dizinin grubunu miras alir."
+            },
+            {
+              "code": "1 · Sticky",
+              "name": "Sticky Bit",
+              "desc": "Dizinde: sadece dosyanin sahibi kendi dosyasini silebilir. /tmp bunu kullanir (drwxrwxrwt — sonda 't')."
+            }
+          ]
+        },
+        {
+          "group": "Linux — Komutlar",
+          "note": "izin goruntule / degistir / avla",
+          "items": [
+            {
+              "code": "ls -l",
+              "name": "Izinleri Goster",
+              "desc": "Ilk sutun: tip + rwx (or. -rwxr-xr-x). Ilk harf: - dosya, d dizin, l symlink."
+            },
+            {
+              "code": "chmod",
+              "name": "Izin Degistir",
+              "desc": "chmod 640 dosya (octal) ya da chmod u+x,go-w dosya (sembolik)."
+            },
+            {
+              "code": "chown",
+              "name": "Sahip Degistir",
+              "desc": "chown user:group dosya. Sahiplik/grup devri (root gerekir)."
+            },
+            {
+              "code": "umask",
+              "name": "Varsayilan Maske",
+              "desc": "Yeni dosyalarin varsayilan izni (022 → 755/644). Izinleri KISITLAR, eklemez."
+            },
+            {
+              "code": "find -perm",
+              "name": "Izin Avi",
+              "desc": "find / -perm -4000 (SUID), -perm -2 (world-writable) — hardening/SOC taramasi."
+            }
+          ]
+        },
+        {
+          "group": "Windows — NTFS Izin Seviyeleri",
+          "note": "icacls kisaltmalari (code = komutun kullandigi harf)",
+          "items": [
+            {
+              "code": "F",
+              "name": "Full Control",
+              "desc": "Her sey + izinleri ve sahipligi degistirme. En tehlikeli; kullaniciya nadiren verilmeli."
+            },
+            {
+              "code": "M",
+              "name": "Modify",
+              "desc": "Oku/yaz/calistir/sil — ama izinleri degistiremez, sahiplik alamaz."
+            },
+            {
+              "code": "RX",
+              "name": "Read & Execute",
+              "desc": "Oku + calistir + klasor icerigini listele."
+            },
+            {
+              "code": "R",
+              "name": "Read",
+              "desc": "Sadece oku/listele."
+            },
+            {
+              "code": "W",
+              "name": "Write",
+              "desc": "Yeni dosya/veri yaz (okumayi icermez)."
+            },
+            {
+              "code": "D",
+              "name": "Delete",
+              "desc": "Nesneyi sil."
+            }
+          ]
+        },
+        {
+          "group": "Windows — Komutlar",
+          "note": "icacls modern aractir (eski cacls'in yerine)",
+          "items": [
+            {
+              "code": "icacls",
+              "name": "Goruntule / Ver",
+              "desc": "icacls C:\\path (goster); icacls dosya /grant Kullanici:(M) (ver); /remove, /deny ile kaldir/reddet."
+            },
+            {
+              "code": "takeown",
+              "name": "Sahiplik Al",
+              "desc": "takeown /f dosya /r — nesnenin sahipligini Administrators'a alir (erisim kurtarma/zorlama)."
+            },
+            {
+              "code": "/grant:r",
+              "name": "Izni Degistir",
+              "desc": "icacls ... /grant:r Kullanici:(RX) — var olan izni DEGISTIRIR (r'siz hali ekler)."
+            },
+            {
+              "code": "/inheritance:r",
+              "name": "Kalitimi Kaldir",
+              "desc": "icacls path /inheritance:r — ust klasorden gelen kalitimi kaldirir, acik ACL'leri korur."
+            }
+          ]
+        },
+        {
+          "group": "Windows — Kavramlar",
+          "note": "ACL mimarisi + etkili izin kurallari",
+          "items": [
+            {
+              "code": "ACL",
+              "name": "Access Control List",
+              "desc": "Bir nesnedeki tum izin kayitlarinin listesi."
+            },
+            {
+              "code": "ACE",
+              "name": "Access Control Entry",
+              "desc": "ACL icindeki tek kayit: 'kim + ne erisimi + izin/ret'."
+            },
+            {
+              "code": "DACL",
+              "name": "Discretionary ACL",
+              "desc": "Kime erisim izni/reddi verildigini tutar — asil izinler burada."
+            },
+            {
+              "code": "SACL",
+              "name": "System ACL",
+              "desc": "Hangi erisimlerin DENETLENECEGINI (loglanacagini) tutar → Event ID 4663."
+            },
+            {
+              "code": "Deny > Allow",
+              "name": "Ret Onceligi",
+              "desc": "Acik Deny, Allow'u ezer. Etkili izin birikmelidir ama Deny her zaman kazanir."
+            },
+            {
+              "code": "Share ∩ NTFS",
+              "name": "Iki Katman",
+              "desc": "Ag erisiminde Share ve NTFS izinlerinin EN KISITLAYICISI gecerli olur."
+            }
+          ]
+        }
+      ],
+      "en": [
+        {
+          "group": "Linux — Base Permissions (rwx)",
+          "note": "Each digit for owner/group/other; r=4 w=2 x=1 summed",
+          "items": [
+            {
+              "code": "4",
+              "name": "r — read",
+              "desc": "On a file: read contents. On a directory: list entries (ls)."
+            },
+            {
+              "code": "2",
+              "name": "w — write",
+              "desc": "On a file: change contents. On a directory: add/delete/rename files."
+            },
+            {
+              "code": "1",
+              "name": "x — execute",
+              "desc": "On a file: run it (script/binary). On a directory: enter it (cd)."
+            },
+            {
+              "code": "0",
+              "name": "— (none)",
+              "desc": "No permission at all."
+            }
+          ]
+        },
+        {
+          "group": "Linux — Common Octal Modes",
+          "note": "chmod 755 file",
+          "items": [
+            {
+              "code": "755",
+              "name": "rwxr-xr-x",
+              "desc": "Owner full; group+other read/execute. Typical for directories and executables."
+            },
+            {
+              "code": "644",
+              "name": "rw-r--r--",
+              "desc": "Owner read/write; others read only. Typical for normal files."
+            },
+            {
+              "code": "600",
+              "name": "rw-------",
+              "desc": "Owner read/write only. SSH private key (~/.ssh/id_rsa) — SSH refuses it if looser."
+            },
+            {
+              "code": "700",
+              "name": "rwx------",
+              "desc": "Owner everything only. For private directories (~/.ssh)."
+            },
+            {
+              "code": "777",
+              "name": "rwxrwxrwx",
+              "desc": "EVERYONE can do everything. Almost always a misconfig / vulnerability."
+            },
+            {
+              "code": "400",
+              "name": "r--------",
+              "desc": "Owner read only. For read-only keys/certs."
+            }
+          ]
+        },
+        {
+          "group": "Linux — Special Bits",
+          "note": "4th digit: setuid=4 setgid=2 sticky=1 (e.g. chmod 4755)",
+          "items": [
+            {
+              "code": "4 · SUID",
+              "name": "Set User ID",
+              "desc": "File runs with the OWNER's rights. A root-owned SUID binary = privilege-escalation target. Shows 's' (rwsr-xr-x). Hunt: find / -perm -4000."
+            },
+            {
+              "code": "2 · SGID",
+              "name": "Set Group ID",
+              "desc": "File runs with group rights; in a dir, new files inherit the dir's group."
+            },
+            {
+              "code": "1 · Sticky",
+              "name": "Sticky Bit",
+              "desc": "On a dir: only a file's owner can delete it. /tmp uses this (drwxrwxrwt — trailing 't')."
+            }
+          ]
+        },
+        {
+          "group": "Linux — Commands",
+          "note": "view / change / hunt permissions",
+          "items": [
+            {
+              "code": "ls -l",
+              "name": "Show Permissions",
+              "desc": "First column: type + rwx (e.g. -rwxr-xr-x). First char: - file, d dir, l symlink."
+            },
+            {
+              "code": "chmod",
+              "name": "Change Mode",
+              "desc": "chmod 640 file (octal) or chmod u+x,go-w file (symbolic)."
+            },
+            {
+              "code": "chown",
+              "name": "Change Owner",
+              "desc": "chown user:group file. Transfer ownership/group (needs root)."
+            },
+            {
+              "code": "umask",
+              "name": "Default Mask",
+              "desc": "Default perms for new files (022 → 755/644). It RESTRICTS, never adds."
+            },
+            {
+              "code": "find -perm",
+              "name": "Permission Hunt",
+              "desc": "find / -perm -4000 (SUID), -perm -2 (world-writable) — hardening/SOC sweep."
+            }
+          ]
+        },
+        {
+          "group": "Windows — NTFS Permission Levels",
+          "note": "icacls abbreviations (code = the letter the command uses)",
+          "items": [
+            {
+              "code": "F",
+              "name": "Full Control",
+              "desc": "Everything + change permissions and ownership. Most dangerous; rarely give to a user."
+            },
+            {
+              "code": "M",
+              "name": "Modify",
+              "desc": "Read/write/execute/delete — but cannot change permissions or take ownership."
+            },
+            {
+              "code": "RX",
+              "name": "Read & Execute",
+              "desc": "Read + execute + list folder contents."
+            },
+            {
+              "code": "R",
+              "name": "Read",
+              "desc": "Read/list only."
+            },
+            {
+              "code": "W",
+              "name": "Write",
+              "desc": "Write new files/data (does not include reading)."
+            },
+            {
+              "code": "D",
+              "name": "Delete",
+              "desc": "Delete the object."
+            }
+          ]
+        },
+        {
+          "group": "Windows — Commands",
+          "note": "icacls is the modern tool (replaces old cacls)",
+          "items": [
+            {
+              "code": "icacls",
+              "name": "View / Grant",
+              "desc": "icacls C:\\path (show); icacls file /grant User:(M) (grant); /remove, /deny to remove/deny."
+            },
+            {
+              "code": "takeown",
+              "name": "Take Ownership",
+              "desc": "takeown /f file /r — takes ownership for Administrators (access recovery/force)."
+            },
+            {
+              "code": "/grant:r",
+              "name": "Replace Grant",
+              "desc": "icacls ... /grant:r User:(RX) — REPLACES the existing grant (without :r it adds)."
+            },
+            {
+              "code": "/inheritance:r",
+              "name": "Strip Inheritance",
+              "desc": "icacls path /inheritance:r — removes inherited ACEs, keeps explicit ones."
+            }
+          ]
+        },
+        {
+          "group": "Windows — Concepts",
+          "note": "ACL architecture + effective-permission rules",
+          "items": [
+            {
+              "code": "ACL",
+              "name": "Access Control List",
+              "desc": "The full list of permission entries on an object."
+            },
+            {
+              "code": "ACE",
+              "name": "Access Control Entry",
+              "desc": "A single record in an ACL: 'who + what access + allow/deny'."
+            },
+            {
+              "code": "DACL",
+              "name": "Discretionary ACL",
+              "desc": "Holds who is allowed/denied access — the actual permissions."
+            },
+            {
+              "code": "SACL",
+              "name": "System ACL",
+              "desc": "Holds which accesses get AUDITED (logged) → Event ID 4663."
+            },
+            {
+              "code": "Deny > Allow",
+              "name": "Deny Wins",
+              "desc": "An explicit Deny overrides Allow. Effective permission is cumulative, but Deny always wins."
+            },
+            {
+              "code": "Share ∩ NTFS",
+              "name": "Two Layers",
+              "desc": "Over the network, the MOST RESTRICTIVE of Share and NTFS permissions applies."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "slug": "windows-dosya-erisim-loglari",
+    "title": {
+      "tr": "Windows Dosya Erişim Logları (4663)",
+      "en": "Windows File Access Logs (4663)"
+    },
+    "category": {
+      "tr": "WINDOWS / SOC",
+      "en": "WINDOWS / SOC"
+    },
+    "type": "grouped",
+    "data": {
+      "tr": [
+        {
+          "group": "Kritik Event ID'ler",
+          "note": "4656 istek → 4663 eylem → 4658 kapanis (ayni Handle ID ile eslesir)",
+          "items": [
+            {
+              "code": "5140",
+              "name": "Paylasima Baglanma",
+              "desc": "Kim, hangi IP'den, hangi paylasima (\\\\Sunucu\\Paylasim) agdan baglandi."
+            },
+            {
+              "code": "5145",
+              "name": "Dosya-Seviyesi Erisim",
+              "desc": "Paylasim icindeki TEK dosyaya erisim kontrolu — 5140'tan daha detayli."
+            },
+            {
+              "code": "4656",
+              "name": "Handle Istendi",
+              "desc": "Izin kontrolu ani + talep edilen yetki (Access Mask) burada gorunur."
+            },
+            {
+              "code": "4663",
+              "name": "Nesneye Erisim",
+              "desc": "Kullanicinin dosyada FIILEN yaptigi (oku/yaz/sil). Ana SOC event'i."
+            },
+            {
+              "code": "4658",
+              "name": "Handle Kapandi",
+              "desc": "Ayni Handle ID ile 4656/4663'e baglanir → bir erisimin tam omru."
+            },
+            {
+              "code": "4670",
+              "name": "Izinler Degisti",
+              "desc": "Nesnenin DACL'i degisti; eski/yeni SDDL loglanir = WRITE_DAC kullaniminin kaniti."
+            },
+            {
+              "code": "4719",
+              "name": "Denetim Politikasi Degisti",
+              "desc": "Audit ayari degistirildi. Saldirgan logu korlestirmeye calisiyor olabilir."
+            }
+          ]
+        },
+        {
+          "group": "Ham Log Alanlari",
+          "note": "SIEM / XML / .evtx ciktisinda haritalanacak satirlar",
+          "items": [
+            {
+              "code": "SubjectUserSid",
+              "name": "Kim",
+              "desc": "Islemi yapan kullanicinin SID'i + Account Name."
+            },
+            {
+              "code": "ObjectName",
+              "name": "Hedef",
+              "desc": "Erisilen dosya/klasorun tam disk yolu (or. C:\\Shares\\Muhasebe\\rapor.xlsx)."
+            },
+            {
+              "code": "IpAddress",
+              "name": "Kaynak",
+              "desc": "Baglantiyi yapan istemcinin IP'si (5140/5145 icinde)."
+            },
+            {
+              "code": "Handle ID",
+              "name": "Eslestirici",
+              "desc": "4656 / 4663 / 4658 olaylarini birbirine baglayan anahtar."
+            },
+            {
+              "code": "Access Mask",
+              "name": "Talep",
+              "desc": "Talep edilen yetki; hex deger (4656)."
+            },
+            {
+              "code": "Accesses",
+              "name": "Eylem",
+              "desc": "Fiili izin; metin ya da %%kod olarak gelir (4663)."
+            }
+          ]
+        },
+        {
+          "group": "Access Mask (Hex) — DUZELTILMIS",
+          "note": "Dikkat: 0x20/0x40/0x80 sik karistirilir (standart haklar 0x20000+)",
+          "items": [
+            {
+              "code": "0x1",
+              "name": "ReadData / List",
+              "desc": "Oku / klasor listele (%%4416)."
+            },
+            {
+              "code": "0x2",
+              "name": "WriteData / AddFile",
+              "desc": "Yaz / yeni dosya ekle (%%4417)."
+            },
+            {
+              "code": "0x4",
+              "name": "AppendData",
+              "desc": "Dosyanin sonuna veri ekle."
+            },
+            {
+              "code": "0x20",
+              "name": "Execute / Traverse",
+              "desc": "Calistir / klasore gir. (READ_CONTROL DEGIL — o 0x20000.)"
+            },
+            {
+              "code": "0x40",
+              "name": "DeleteChild",
+              "desc": "Klasordeki alt dosyayi sil."
+            },
+            {
+              "code": "0x80",
+              "name": "ReadAttributes",
+              "desc": "Dosya ozniteliklerini oku."
+            },
+            {
+              "code": "0x10000",
+              "name": "DELETE",
+              "desc": "Dosya/klasoru sil (%%1537)."
+            },
+            {
+              "code": "0x20000",
+              "name": "READ_CONTROL",
+              "desc": "Nesnenin izinlerini (ACL/DACL) oku (%%1538)."
+            },
+            {
+              "code": "0x40000",
+              "name": "WRITE_DAC",
+              "desc": "Izinleri degistir — KRITIK (%%1539). 4670 ile birlikte avla."
+            },
+            {
+              "code": "0x80000",
+              "name": "WRITE_OWNER",
+              "desc": "Sahibi degistir / sahiplen — KRITIK (%%1540)."
+            },
+            {
+              "code": "0x1F01FF",
+              "name": "FILE_ALL_ACCESS",
+              "desc": "Tam denetim (tum bitler). Tek basina = Full Control."
+            }
+          ]
+        },
+        {
+          "group": "SDDL Kisaltmalari",
+          "note": "O:owner G:group D:DACL S:SACL — her kod ACE icindeki KONUMUNA gore okunur",
+          "items": [
+            {
+              "code": "A / D",
+              "name": "ACE Tipi",
+              "desc": "Allow / Deny. Acik Deny her zaman Allow'u ezer."
+            },
+            {
+              "code": "CI / OI",
+              "name": "Kalitim",
+              "desc": "Container Inherit (alt klasorlere) / Object Inherit (alt dosyalara)."
+            },
+            {
+              "code": "SA / FA",
+              "name": "Audit Bayragi",
+              "desc": "SACL'de: Success / Fail denetimi. (FA burada 'Failed', hak alaninda ise 'File All'!)"
+            },
+            {
+              "code": "FA / FR / FW",
+              "name": "Dosya Hakki",
+              "desc": "Hak alaninda: File All / File Read / File Write."
+            },
+            {
+              "code": "WD",
+              "name": "Iki Anlam",
+              "desc": "Hak alaninda Write DAC; SID alaninda Everyone. Konuma bak!"
+            },
+            {
+              "code": "RC/SD/WO",
+              "name": "Standart Hak",
+              "desc": "Read Control / Delete / Write Owner."
+            },
+            {
+              "code": "BA/SY/AU",
+              "name": "SID Kisa",
+              "desc": "Builtin Admins / Local System / Authenticated Users (WD=Everyone, CO=Creator Owner)."
+            }
+          ]
+        },
+        {
+          "group": "Toplama & PowerShell",
+          "note": "Onkosul: bu olaylar loga dusmeli, yoksa 4663 hic gelmez",
+          "items": [
+            {
+              "code": "auditpol",
+              "name": "Politikayi Ac",
+              "desc": "'Audit File System' + 'Audit Detailed File Share' — Success VE Failure acik olmali."
+            },
+            {
+              "code": "SACL",
+              "name": "Onkosul",
+              "desc": "Denetlenecek klasore audit ACE (SACL) eklenmeli; yoksa erisim loglanmaz."
+            },
+            {
+              "code": "Get-WinEvent",
+              "name": "Filtrele",
+              "desc": "@{LogName='Security'; Id=4663; StartTime=...} ile son erisimleri cek."
+            },
+            {
+              "code": "Properties[]",
+              "name": "Ayristir",
+              "desc": "4663'te: [1]=Kullanici, [6]=DosyaYolu, [9]=ErisimTuru."
+            },
+            {
+              "code": "4663 + WRITE_DAC",
+              "name": "Avlanacak",
+              "desc": "Izin/sahip degisimi (0x40000/0x80000) = yetki yukseltme / kaliciligin izi."
+            }
+          ]
+        }
+      ],
+      "en": [
+        {
+          "group": "Critical Event IDs",
+          "note": "4656 request → 4663 action → 4658 close (matched by the same Handle ID)",
+          "items": [
+            {
+              "code": "5140",
+              "name": "Share Connect",
+              "desc": "Who, from which IP, connected over the network to which share (\\\\Server\\Share)."
+            },
+            {
+              "code": "5145",
+              "name": "File-Level Access",
+              "desc": "Access check for a SINGLE file inside the share — more detailed than 5140."
+            },
+            {
+              "code": "4656",
+              "name": "Handle Requested",
+              "desc": "The permission-check moment + the requested rights (Access Mask) appear here."
+            },
+            {
+              "code": "4663",
+              "name": "Object Accessed",
+              "desc": "What the user ACTUALLY did on the file (read/write/delete). The core SOC event."
+            },
+            {
+              "code": "4658",
+              "name": "Handle Closed",
+              "desc": "Links to 4656/4663 via the same Handle ID → the full life of one access."
+            },
+            {
+              "code": "4670",
+              "name": "Permissions Changed",
+              "desc": "An object's DACL changed; old/new SDDL is logged = proof of WRITE_DAC use."
+            },
+            {
+              "code": "4719",
+              "name": "Audit Policy Changed",
+              "desc": "Audit setting was changed. An attacker may be trying to blind logging."
+            }
+          ]
+        },
+        {
+          "group": "Raw Log Fields",
+          "note": "Lines to map in SIEM / XML / .evtx output",
+          "items": [
+            {
+              "code": "SubjectUserSid",
+              "name": "Who",
+              "desc": "SID + Account Name of the user performing the action."
+            },
+            {
+              "code": "ObjectName",
+              "name": "Target",
+              "desc": "Full disk path of the accessed file/folder (e.g. C:\\Shares\\Finance\\report.xlsx)."
+            },
+            {
+              "code": "IpAddress",
+              "name": "Source",
+              "desc": "IP of the connecting client (present in 5140/5145)."
+            },
+            {
+              "code": "Handle ID",
+              "name": "Correlator",
+              "desc": "The key that links the 4656 / 4663 / 4658 events."
+            },
+            {
+              "code": "Access Mask",
+              "name": "Request",
+              "desc": "Requested rights; a hex value (4656)."
+            },
+            {
+              "code": "Accesses",
+              "name": "Action",
+              "desc": "The actual permission exercised; text or %%code (4663)."
+            }
+          ]
+        },
+        {
+          "group": "Access Mask (Hex) — CORRECTED",
+          "note": "Watch out: 0x20/0x40/0x80 are often confused (standard rights are 0x20000+)",
+          "items": [
+            {
+              "code": "0x1",
+              "name": "ReadData / List",
+              "desc": "Read / list directory (%%4416)."
+            },
+            {
+              "code": "0x2",
+              "name": "WriteData / AddFile",
+              "desc": "Write / add a new file (%%4417)."
+            },
+            {
+              "code": "0x4",
+              "name": "AppendData",
+              "desc": "Append data to the end of a file."
+            },
+            {
+              "code": "0x20",
+              "name": "Execute / Traverse",
+              "desc": "Execute / enter a directory. (NOT READ_CONTROL — that is 0x20000.)"
+            },
+            {
+              "code": "0x40",
+              "name": "DeleteChild",
+              "desc": "Delete a child file within a directory."
+            },
+            {
+              "code": "0x80",
+              "name": "ReadAttributes",
+              "desc": "Read a file's attributes."
+            },
+            {
+              "code": "0x10000",
+              "name": "DELETE",
+              "desc": "Delete the file/folder (%%1537)."
+            },
+            {
+              "code": "0x20000",
+              "name": "READ_CONTROL",
+              "desc": "Read the object's permissions (ACL/DACL) (%%1538)."
+            },
+            {
+              "code": "0x40000",
+              "name": "WRITE_DAC",
+              "desc": "Change permissions — CRITICAL (%%1539). Hunt alongside 4670."
+            },
+            {
+              "code": "0x80000",
+              "name": "WRITE_OWNER",
+              "desc": "Change owner / take ownership — CRITICAL (%%1540)."
+            },
+            {
+              "code": "0x1F01FF",
+              "name": "FILE_ALL_ACCESS",
+              "desc": "Full control (all bits). On its own = Full Control."
+            }
+          ]
+        },
+        {
+          "group": "SDDL Abbreviations",
+          "note": "O:owner G:group D:DACL S:SACL — each code is read by its POSITION in the ACE",
+          "items": [
+            {
+              "code": "A / D",
+              "name": "ACE Type",
+              "desc": "Allow / Deny. An explicit Deny always overrides Allow."
+            },
+            {
+              "code": "CI / OI",
+              "name": "Inheritance",
+              "desc": "Container Inherit (to subfolders) / Object Inherit (to child files)."
+            },
+            {
+              "code": "SA / FA",
+              "name": "Audit Flag",
+              "desc": "In SACL: Success / Fail audit. (FA here = 'Failed'; in the rights field = 'File All'!)"
+            },
+            {
+              "code": "FA / FR / FW",
+              "name": "File Right",
+              "desc": "In the rights field: File All / File Read / File Write."
+            },
+            {
+              "code": "WD",
+              "name": "Two Meanings",
+              "desc": "In the rights field = Write DAC; in the SID field = Everyone. Mind the position!"
+            },
+            {
+              "code": "RC/SD/WO",
+              "name": "Standard Right",
+              "desc": "Read Control / Delete / Write Owner."
+            },
+            {
+              "code": "BA/SY/AU",
+              "name": "SID Short",
+              "desc": "Builtin Admins / Local System / Authenticated Users (WD=Everyone, CO=Creator Owner)."
+            }
+          ]
+        },
+        {
+          "group": "Collection & PowerShell",
+          "note": "Precondition: these events must reach the log, or 4663 never appears",
+          "items": [
+            {
+              "code": "auditpol",
+              "name": "Enable Policy",
+              "desc": "'Audit File System' + 'Audit Detailed File Share' — both Success AND Failure on."
+            },
+            {
+              "code": "SACL",
+              "name": "Precondition",
+              "desc": "An audit ACE (SACL) must be set on the folder to audit; otherwise access is not logged."
+            },
+            {
+              "code": "Get-WinEvent",
+              "name": "Filter",
+              "desc": "@{LogName='Security'; Id=4663; StartTime=...} to pull recent accesses."
+            },
+            {
+              "code": "Properties[]",
+              "name": "Parse",
+              "desc": "On 4663: [1]=User, [6]=FilePath, [9]=AccessType."
+            },
+            {
+              "code": "4663 + WRITE_DAC",
+              "name": "To Hunt",
+              "desc": "Permission/owner change (0x40000/0x80000) = a trail of privilege escalation / persistence."
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

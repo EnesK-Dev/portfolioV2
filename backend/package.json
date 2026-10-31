@@ -4,6 +4,9 @@
   "description": "Portfolio API (Node + Express)",
   "main": "server.js",
   "type": "commonjs",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "start": "node server.js"
   },

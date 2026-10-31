@@ -3,8 +3,13 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const fs = require('fs');
 
+// Kalici veri dizini: prod'da mount edilen volume (DATA_DIR), yoksa proje klasoru (dev).
+// portfolio.db + uploads burada tutulur ki redeploy'da UCMASIN. Seed JSON'lari __dirname'de kalir.
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+fs.mkdirSync(DATA_DIR, { recursive: true });
+
 // Veritabani dosyasini ac (yoksa olusturur)
-const db = new DatabaseSync(path.join(__dirname, 'portfolio.db'));
+const db = new DatabaseSync(path.join(DATA_DIR, 'portfolio.db'));
 
 // --- Tablolari olustur (yoksa) ---
 db.exec(`
@@ -43,6 +48,16 @@ db.exec(`
     title    TEXT,
     note     TEXT,
     progress INTEGER DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS notes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug       TEXT UNIQUE,
+    title      TEXT,
+    category   TEXT,
+    type       TEXT,
+    data       TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
   );
 `);
 
@@ -85,6 +100,25 @@ if (projCount === 0) {
     insert.run(p.title, p.desc, JSON.stringify(p.tech));  // tech dizisini JSON metni olarak sakla
   }
   console.log('projects tablosu JSON\'dan tohumlandi');
+}
+
+// --- Notlari tohumla/senkronla ---
+// Seed notlari notes-seed.json'un AYNASIDIR: yoksa ekle, varsa guncelle (dosyadaki surumu yansit).
+// Kalici/elle duzenleme icin admin'den YENI slug ile not olustur; seed slug'lari restart'ta senkronlanir.
+const seedNotes = JSON.parse(fs.readFileSync(path.join(__dirname, 'notes-seed.json'), 'utf-8'));
+const insertNote = db.prepare('INSERT INTO notes (slug, title, category, type, data) VALUES (?, ?, ?, ?, ?)');
+const updateNote = db.prepare('UPDATE notes SET title = ?, category = ?, type = ?, data = ? WHERE slug = ?');
+for (const n of seedNotes) {
+  const T = JSON.stringify(n.title);
+  const C = JSON.stringify(n.category ?? null);
+  const D = JSON.stringify(n.data);
+  const exists = db.prepare('SELECT 1 FROM notes WHERE slug = ?').get(n.slug);
+  if (exists) {
+    updateNote.run(T, C, n.type, D, n.slug);
+  } else {
+    insertNote.run(n.slug, T, C, n.type, D);
+    console.log('not eklendi:', n.slug);
+  }
 }
 
 module.exports = db;

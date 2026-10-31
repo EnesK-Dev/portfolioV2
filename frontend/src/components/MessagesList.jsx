@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API } from '../api.js'
 
 // Gelen iletisim mesajlarini gosterir (korumali GET /api/messages)
 function MessagesList({ token }) {
@@ -7,7 +8,7 @@ function MessagesList({ token }) {
 
   // Bilesen acilinca mesajlari cek
   useEffect(() => {
-    fetch('http://localhost:3001/api/messages', {
+    fetch(`${API}/api/messages`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

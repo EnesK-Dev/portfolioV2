@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API } from '../api.js'
 
 // token'i ust bilesenden (Admin) prop olarak alir
 function ProjectsEditor({ token }) {
@@ -7,7 +8,7 @@ function ProjectsEditor({ token }) {
 
   // mevcut projeleri yukle
   useEffect(() => {
-    fetch('http://localhost:3001/api/projects')
+    fetch(`${API}/api/projects`)
       .then((res) => res.json())
       .then((data) => setProjects(data))
       .catch(() => {})
@@ -38,7 +39,7 @@ function ProjectsEditor({ token }) {
     formData.append('image', file)      // backend'de upload.single('image') ile eslesir
     setStatus('Gorsel yukleniyor...')
     try {
-      const res = await fetch('http://localhost:3001/api/upload', {
+      const res = await fetch(`${API}/api/upload`, {
         method: 'POST',
         // DIKKAT: Content-Type ELLE verilmez! FormData'da tarayici
         // multipart sinirini kendi ekler; elle yazarsak upload bozulur.
@@ -61,7 +62,7 @@ function ProjectsEditor({ token }) {
   async function handleSave() {
     setStatus('Kaydediliyor...')
     try {
-      const res = await fetch('http://localhost:3001/api/projects', {
+      const res = await fetch(`${API}/api/projects`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ function ProjectsEditor({ token }) {
           {p.image && (
             <img
               className="edit-preview"
-              src={`http://localhost:3001${p.image}`}
+              src={`${API}${p.image}`}
               alt="onizleme"
             />
           )}

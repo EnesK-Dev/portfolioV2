@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API } from '../api.js'
 
 // Devam eden projeleri (ilerleme cubuklu) duzenler
 function ProgressEditor({ token }) {
@@ -6,7 +7,7 @@ function ProgressEditor({ token }) {
   const [status, setStatus] = useState('')
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/wip')
+    fetch(`${API}/api/wip`)
       .then((res) => res.json())
       .then((data) => setItems(data))
       .catch(() => {})
@@ -31,7 +32,7 @@ function ProgressEditor({ token }) {
   async function handleSave() {
     setStatus('Kaydediliyor...')
     try {
-      const res = await fetch('http://localhost:3001/api/wip', {
+      const res = await fetch(`${API}/api/wip`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

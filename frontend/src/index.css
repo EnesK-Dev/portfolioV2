@@ -4,8 +4,39 @@
 
 /* --- Sumi & Steel brutalist temel --- */
 @layer base {
+  /* --- KOYU TEMA (varsayilan) --- */
   :root {
     color-scheme: dark;
+    --c-bg: #131313;
+    --c-surface: #131313;
+    --c-sc-lowest: #0e0e0e;
+    --c-sc-low: #1c1b1b;
+    --c-sc: #201f1f;
+    --c-sc-high: #2a2a2a;
+    --c-sv: #353534;
+    --c-on: #e5e2e1;
+    --c-on-var: #bdb9b7;
+    --c-secondary: #b0c6ff;
+    --c-tertiary: #ecc246;
+    --wc: rgba(229, 226, 225, 0.06);  /* soluk dalga (koyu temada acik cizgi) */
+    --wc-strong: rgba(229, 226, 225, 0.14); /* belirgin dalga (hero) */
+  }
+  /* --- ACIK TEMA (html.light) --- */
+  :root.light {
+    color-scheme: light;
+    --c-bg: #f4f1ea;          /* washi kagit */
+    --c-surface: #f4f1ea;
+    --c-sc-lowest: #fffdf8;
+    --c-sc-low: #ece7dc;
+    --c-sc: #e4ded0;
+    --c-sc-high: #d8d1c0;
+    --c-sv: #c4bcab;
+    --c-on: #141414;          /* sumi murekkep (metin/kenarlik) */
+    --c-on-var: #5c524e;
+    --c-secondary: #2f4676;   /* acik zeminde okunur indigo */
+    --c-tertiary: #9a7b16;    /* acik zeminde okunur altin */
+    --wc: rgba(20, 20, 20, 0.05);  /* soluk dalga (acik temada koyu cizgi) */
+    --wc-strong: rgba(20, 20, 20, 0.11); /* belirgin dalga (hero) */
   }
   html,
   body {
@@ -19,8 +50,8 @@
     scroll-margin-top: 4rem;      /* sticky nav altinda baslik gizlenmesin */
   }
   body {
-    background: #131313;        /* sumi */
-    color: #e5e2e1;            /* washi */
+    background: var(--c-bg);
+    color: var(--c-on);
     overscroll-behavior: none;
   }
   /* brutalist: hicbir yerde yuvarlak kose yok */
@@ -41,4 +72,28 @@
 }
 .animate-pulse-fast {
   animation: pulse-fast 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Acik temada: kirmizi-cizgi/siyah gorsellerin siyah arkasini beyaza cevir.
+   invert -> siyah beyaz olur, kirmizi camgobegi olur; hue-rotate(180) kirmiziyi geri getirir. */
+:root.light .themed-art {
+  filter: invert(1) hue-rotate(180deg) contrast(1.1);
+}
+
+/* Soluk seigaiha (青海波) dalga deseni — zemin rengini kapatmaz, uzerine biner */
+.wave-bg {
+  background-image:
+    radial-gradient(circle at 50% 0%, transparent 7px, var(--wc) 8px, transparent 9px, transparent 15px, var(--wc) 16px, transparent 17px, transparent 23px, var(--wc) 24px, transparent 25px),
+    radial-gradient(circle at 50% 100%, transparent 7px, var(--wc) 8px, transparent 9px, transparent 15px, var(--wc) 16px, transparent 17px, transparent 23px, var(--wc) 24px, transparent 25px);
+  background-size: 48px 48px;
+  background-position: 0 0, 24px 24px;
+}
+
+/* Belirgin & büyük seigaiha (hero icin) */
+.wave-bg-lg {
+  background-image:
+    radial-gradient(circle at 50% 0%, transparent 12px, var(--wc-strong) 13px, transparent 14px, transparent 26px, var(--wc-strong) 27px, transparent 28px, transparent 40px, var(--wc-strong) 41px, transparent 42px),
+    radial-gradient(circle at 50% 100%, transparent 12px, var(--wc-strong) 13px, transparent 14px, transparent 26px, var(--wc-strong) 27px, transparent 28px, transparent 40px, var(--wc-strong) 41px, transparent 42px);
+  background-size: 84px 84px;
+  background-position: 0 0, 42px 42px;
 }

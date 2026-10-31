@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API } from '../api.js'
 
 // GitHub repolarini listeler + hangilerinin yayinlanacagini sectirir
 function GithubRepos({ token }) {
@@ -9,7 +10,7 @@ function GithubRepos({ token }) {
 
   useEffect(() => {
     // 1) GitHub'daki tum repolari cek
-    fetch('http://localhost:3001/api/github/repos')
+    fetch(`${API}/api/github/repos`)
       .then((res) => {
         if (!res.ok) throw new Error('alinamadi')
         return res.json()
@@ -21,7 +22,7 @@ function GithubRepos({ token }) {
       .catch(() => setStatus('GitHub repolari yuklenemedi.'))
 
     // 2) Daha once yayinlanmis olanlari cek -> kutulari onceden isaretle
-    fetch('http://localhost:3001/api/github/featured')
+    fetch(`${API}/api/github/featured`)
       .then((res) => res.json())
       .then((data) => setSelectedIds(data.map((r) => r.id)))
       .catch(() => {})
@@ -39,7 +40,7 @@ function GithubRepos({ token }) {
     setSaveStatus('Kaydediliyor...')
     const selectedRepos = repos.filter((r) => selectedIds.includes(r.id))
     try {
-      const res = await fetch('http://localhost:3001/api/github/featured', {
+      const res = await fetch(`${API}/api/github/featured`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

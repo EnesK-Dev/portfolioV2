@@ -11,17 +11,25 @@ const fs = require('fs');                 // klasor olusturma
 const db = require('./db');               // SQLite veritabani (db.js)
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;   // Railway/host PORT verir; yoksa dev'de 3001
+// Tek proxy (nginx/host) arkasindayken req.ip gercek istemci IP'si olsun (rate limit dogru calissin)
+app.set('trust proxy', 1);
 
 // GitHub kullanici adi (.env'de yoksa buradaki varsayilan kullanilir)
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'EnesK-Dev';
 
-app.use(cors());
+// CORS: prod'da sadece izin verilen origin(ler)e ac (virgulle birden fazla),
+// CORS_ORIGIN tanimli degilse (dev) eski davranis = tum originlere izin.
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+app.use(cors(allowedOrigins.length ? { origin: allowedOrigins } : {}));
 app.use(express.json());
 
 // --- Dosya yukleme (multer) ---
 // Yuklenen dosyalarin saklanacagi klasor; yoksa olustur
-const uploadDir = path.join(__dirname, 'uploads');
+const uploadDir = path.join(process.env.DATA_DIR || __dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Klasoru statik sun -> tarayici http://localhost:3001/uploads/dosya.png ile erisir
@@ -56,6 +64,44 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD,
   },
+});
+
+// --- Basit bellek-ici rate limit (ek bagimlilik yok) ---
+// IP basina windowMs suresinde en fazla 'max' istek; asilirsa 429 doner.
+// Not: tek sunucu ornegi icin yeterli; restart'ta sayac sifirlanir (portfolyo olceginde sorun degil).
+// Uretimde cok ornekli/siddetli ihtiyac olursa 'express-rate-limit' + Redis'e gecilir.
+function rateLimit({ windowMs, max, message }) {
+  const hits = new Map(); // ip -> { count, resetAt }
+  // Suresi dolan kayitlari periyodik temizle (Map sonsuz buyumesin). unref: sureci acik tutmasin.
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, e] of hits) if (now > e.resetAt) hits.delete(ip);
+  }, windowMs).unref();
+
+  return (req, res, next) => {
+    const ip = req.ip || 'unknown';
+    const now = Date.now();
+    let e = hits.get(ip);
+    if (!e || now > e.resetAt) { e = { count: 0, resetAt: now + windowMs }; hits.set(ip, e); }
+    e.count++;
+    if (e.count > max) {
+      const retryAfter = Math.ceil((e.resetAt - now) / 1000);
+      res.set('Retry-After', String(retryAfter));
+      return res.status(429).json({ error: message, retryAfter });
+    }
+    next();
+  };
+}
+
+// Admin girisi: brute-force'a karsi 15 dakikada 5 deneme
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 5,
+  message: 'Cok fazla giris denemesi. 15 dakika sonra tekrar deneyin.',
+});
+// Iletisim: spam'e karsi saatte 5 mesaj
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, max: 5,
+  message: 'Cok fazla mesaj gonderildi. Lutfen daha sonra tekrar deneyin.',
 });
 
 // --- Auth middleware (bekci): token'i dogrula ---
@@ -111,7 +157,7 @@ app.put('/api/projects', authGuard, (req, res) => {
 });
 
 // --- Admin girisi ---
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
   if (username !== process.env.ADMIN_USERNAME) {
     return res.status(401).json({ error: 'Kullanici adi veya sifre hatali' });
@@ -125,7 +171,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // --- Iletisim: mesaji DB'ye kaydet + e-posta gonder ---
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
   const { name, message } = req.body;
 
   // 1) Mesaji veritabanina yaz (kalici) — created_at otomatik dolar
@@ -253,6 +299,59 @@ app.post('/api/upload', authGuard, (req, res) => {
     // Frontend'e dosyanin erisim yolunu don
     res.json({ url: `/uploads/${req.file.filename}` });
   });
+});
+
+// JSON ise parse et, degilse (eski duz metin) oldugu gibi birak -> geriye uyumlu
+function parseMaybe(v) {
+  if (typeof v !== 'string') return v;
+  try { return JSON.parse(v); } catch { return v; }
+}
+
+// --- Notlar: liste (public) --- data'yi gondermeyiz (liste hafif olsun)
+app.get('/api/notes', (req, res) => {
+  const rows = db.prepare('SELECT slug, title, category, type, created_at FROM notes ORDER BY id DESC').all();
+  res.json(rows.map((r) => ({ ...r, title: parseMaybe(r.title), category: parseMaybe(r.category) })));
+});
+
+// --- Notlar: tek not (public) --- :slug URL parametresi
+app.get('/api/notes/:slug', (req, res) => {
+  const row = db.prepare('SELECT slug, title, category, type, data, created_at FROM notes WHERE slug = ?').get(req.params.slug);
+  if (!row) return res.status(404).json({ error: 'Not bulunamadi' });
+  res.json({
+    ...row,
+    title: parseMaybe(row.title),
+    category: parseMaybe(row.category),
+    data: parseMaybe(row.data),
+  });
+});
+
+// --- Not olustur (korumali) ---
+app.post('/api/notes', authGuard, (req, res) => {
+  const { slug, title, category, type, data } = req.body;
+  if (!slug || !title) return res.status(400).json({ error: 'slug ve title gerekli' });
+  try {
+    db.prepare('INSERT INTO notes (slug, title, category, type, data) VALUES (?, ?, ?, ?, ?)')
+      .run(slug, JSON.stringify(title ?? ''), JSON.stringify(category ?? null), type || 'ports', JSON.stringify(data ?? []));
+    res.json({ ok: true });
+  } catch {
+    // slug UNIQUE -> ayni slug varsa buraya duser
+    res.status(409).json({ error: 'Bu slug zaten kullaniliyor' });
+  }
+});
+
+// --- Not guncelle (korumali) ---
+app.put('/api/notes/:slug', authGuard, (req, res) => {
+  const { title, category, type, data } = req.body;
+  const info = db.prepare('UPDATE notes SET title=?, category=?, type=?, data=? WHERE slug=?')
+    .run(JSON.stringify(title ?? ''), JSON.stringify(category ?? null), type || 'ports', JSON.stringify(data ?? []), req.params.slug);
+  if (info.changes === 0) return res.status(404).json({ error: 'Not bulunamadi' });
+  res.json({ ok: true });
+});
+
+// --- Not sil (korumali) ---
+app.delete('/api/notes/:slug', authGuard, (req, res) => {
+  db.prepare('DELETE FROM notes WHERE slug = ?').run(req.params.slug);
+  res.json({ ok: true });
 });
 
 // --- Sunucuyu baslat ---
