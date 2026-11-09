@@ -2788,5 +2788,195 @@
         }
       ]
     }
+  },
+  {
+    "slug": "windows-process-agaci",
+    "title": {
+      "tr": "Windows Process Ağacı (Hiyerarşi)",
+      "en": "Windows Process Tree (Hierarchy)"
+    },
+    "category": {
+      "tr": "WINDOWS / SOC",
+      "en": "WINDOWS / SOC"
+    },
+    "type": "tree",
+    "data": {
+      "tr": {
+        "label": "System (PID 4)",
+        "desc": "İşletim sisteminin çekirdek process’i. Tüm ağacın kökü — ebeveyni yoktur ve PID’i her zaman 4’tür. Kernel-mode thread’leri barındırır; tek görünür görevi smss.exe’yi başlatmaktır.",
+        "children": [
+          {
+            "label": "smss.exe",
+            "desc": "Session Manager. System’in başlattığı ilk kullanıcı-mod process. csrss.exe, wininit.exe (Session 0) ve her oturum için winlogon.exe’yi doğurur, sonra kendini sonlandırır — bu yüzden çoğu zaman ebeveynsiz/ölü görünür. Yalnızca System32’de çalışmalı.",
+            "children": [
+              {
+                "label": "csrss.exe",
+                "color": "#324879",
+                "desc": "Client/Server Runtime. Her oturumda tam 1 tane (Session 0 + aktif oturum = genelde 2 örnek). Konsol pencerelerini ve process/thread oluşturmayı yönetir. ASLA çocuk process’i olmaz — csrss altında bir şey (örn. cmd) görürsen ciddi şüphe."
+              },
+              {
+                "label": "wininit.exe",
+                "color": "#ff5541",
+                "desc": "Windows Initialization. Session 0’da çalışır, tek olmalı. services.exe (SCM) ve lsass.exe’yi doğurur. Ebeveyni ölü smss’tir. Birden fazla wininit veya System32 dışı dizin = taklit.",
+                "children": [
+                  {
+                    "label": "services.exe",
+                    "desc": "Service Control Manager (SCM). wininit’in çocuğu, tek olmalı. Tüm Windows servislerinin ve svchost örneklerinin ebeveynidir. System32 dışından çalışması kritik alarmdır.",
+                    "children": [
+                      {
+                        "label": "svchost.exe",
+                        "desc": "Service Host — paylaşılan servisleri barındırır; sistemde düzinelercesi normaldir. Hepsi System32’de ve “-k <grup>” parametresiyle çalışır. Ebeveyni services.exe DEĞİLSE, “-k” yoksa ya da C:\\Users’tan çalışıyorsa → kötü amaçlı taklit (en sık kullanılan maskeleme tekniği).",
+                        "children": [
+                          {
+                            "label": "RuntimeBroker.exe",
+                            "desc": "UWP (Store) uygulamalarının dosya/kamera/konum izinlerini denetleyen aracı. svchost’un çocuğu; çok sayıda olması normaldir."
+                          },
+                          {
+                            "label": "taskhostw.exe",
+                            "desc": "Zamanlanmış görevleri (Task Scheduler) ve DLL tabanlı görevleri barındıran host. svchost’un çocuğu. Saldırganlar kalıcılık için buraya görev ekler."
+                          },
+                          {
+                            "label": "wmiprvse.exe",
+                            "desc": "WMI Provider Host. WMI sorgularını çalıştırır (svchost/DcomLaunch altında). powershell.exe veya cmd.exe doğuruyorsa → uzaktan WMI ile komut çalıştırma = yanal hareket (lateral movement). SOC’ta öncelikli alarm."
+                          }
+                        ]
+                      },
+                      {
+                        "label": "spoolsv.exe",
+                        "desc": "Print Spooler servisi. services.exe’nin çocuğu. PrintNightmare gibi açıklarla istismar edilebildiği için yüklediği DLL’lere ve ebeveyn-çocuk ilişkisine dikkat et."
+                      }
+                    ]
+                  },
+                  {
+                    "label": "lsass.exe",
+                    "color": "#cea72c",
+                    "desc": "⚠ Local Security Authority. Parolaları, NTLM hash’lerini ve Kerberos tiketlerini RAM’de tutar → Mimikatz/credential-dump’ın bir numaralı hedefi. SADECE 1 tane olmalı ve ebeveyni her zaman wininit.exe’dir. 2. bir lsass, farklı ebeveyn, veya lsass’a handle açan tuhaf bir process = kritik kimlik hırsızlığı alarmı."
+                  }
+                ]
+              },
+              {
+                "label": "winlogon.exe",
+                "color": "#2f8f6b",
+                "desc": "Logon sürecini yönetir, her interaktif oturumda 1 tane. Secure Attention Sequence (Ctrl+Alt+Del) ve kilit ekranından sorumlu. userinit.exe’yi çalıştırır; ebeveyni ölü smss.",
+                "children": [
+                  {
+                    "label": "userinit.exe",
+                    "desc": "Oturum açılışında kullanıcı ortamını hazırlar (profil, grup politikaları, logon script), explorer.exe’yi başlatır ve hemen kapanır. Hâlâ çalışıyor veya explorer dışında çocuğu varsa şüpheli.",
+                    "children": [
+                      {
+                        "label": "explorer.exe",
+                        "desc": "Masaüstü kabuğu (taskbar, Başlat menüsü, dosya gezgini). userinit tarafından başlatılır; userinit öldüğü için ebeveynsiz görünmesi NORMAL’dir. Kullanıcının elle açtığı tüm uygulamaların ebeveyni olduğundan saldırgan analizinde referans noktasıdır.",
+                        "children": [
+                          {
+                            "label": "powershell.exe",
+                            "desc": "Normal ebeveyni explorer veya cmd’dir (kullanıcı elle açar). WINWORD/EXCEL/OUTLOOK altında ya da “-enc” (base64), “-nop -w hidden”, “IEX(New-Object Net.WebClient)” gibi argümanlarla çalışıyorsa → kritik: makro/indirme saldırısı."
+                          },
+                          {
+                            "label": "cmd.exe",
+                            "desc": "Komut istemcisi. Normal ebeveyni explorer. Office uygulaması veya web sunucusu (w3wp.exe, httpd) altında belirirse → makro çalıştırma ya da web shell ile uzaktan kod çalıştırma."
+                          },
+                          {
+                            "label": "chrome.exe",
+                            "desc": "Kullanıcı uygulaması (tarayıcı). explorer’ın çocuğu. Kendi alt process’leri (sekme/GPU) ve ağ bağlantıları olması normaldir."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "en": {
+        "label": "System (PID 4)",
+        "desc": "The OS kernel process. Root of the whole tree — it has no parent and its PID is always 4. Hosts kernel-mode threads; its only visible job is to start smss.exe.",
+        "children": [
+          {
+            "label": "smss.exe",
+            "desc": "Session Manager. The first user-mode process started by System. Spawns csrss.exe, wininit.exe (Session 0) and a winlogon.exe per session, then terminates itself — which is why it usually appears parentless/dead. Must run only from System32.",
+            "children": [
+              {
+                "label": "csrss.exe",
+                "color": "#324879",
+                "desc": "Client/Server Runtime. Exactly one per session (Session 0 + active session = usually 2 instances). Manages console windows and process/thread creation. NEVER has child processes — anything under csrss (e.g. cmd) is highly suspicious."
+              },
+              {
+                "label": "wininit.exe",
+                "color": "#ff5541",
+                "desc": "Windows Initialization. Runs in Session 0, should be a single instance. Spawns services.exe (SCM) and lsass.exe. Its parent is the dead smss. Multiple wininit or a non-System32 path = masquerade.",
+                "children": [
+                  {
+                    "label": "services.exe",
+                    "desc": "Service Control Manager (SCM). Child of wininit, should be single. Parent of all Windows services and svchost instances. Running from outside System32 is a critical alert.",
+                    "children": [
+                      {
+                        "label": "svchost.exe",
+                        "desc": "Service Host — hosts shared services; dozens of instances are normal. All run from System32 with a “-k <group>” flag. If the parent is NOT services.exe, “-k” is missing, or it runs from C:\\Users → malicious masquerade (the most common technique).",
+                        "children": [
+                          {
+                            "label": "RuntimeBroker.exe",
+                            "desc": "Broker that governs UWP (Store) app permissions (files/camera/location). Child of svchost; many instances are normal."
+                          },
+                          {
+                            "label": "taskhostw.exe",
+                            "desc": "Host for scheduled (Task Scheduler) and DLL-based tasks. Child of svchost. Attackers add tasks here for persistence."
+                          },
+                          {
+                            "label": "wmiprvse.exe",
+                            "desc": "WMI Provider Host. Runs WMI queries (under svchost/DcomLaunch). If it spawns powershell.exe or cmd.exe → remote WMI execution = lateral movement. A priority SOC alert."
+                          }
+                        ]
+                      },
+                      {
+                        "label": "spoolsv.exe",
+                        "desc": "Print Spooler service. Child of services.exe. Exploitable via flaws like PrintNightmare, so watch its loaded DLLs and parent-child chain."
+                      }
+                    ]
+                  },
+                  {
+                    "label": "lsass.exe",
+                    "color": "#cea72c",
+                    "desc": "⚠ Local Security Authority. Keeps passwords, NTLM hashes and Kerberos tickets in RAM → the #1 target of Mimikatz/credential dumping. There must be ONLY ONE, and its parent is always wininit.exe. A 2nd lsass, a different parent, or an odd process opening a handle to lsass = critical credential-theft alert."
+                  }
+                ]
+              },
+              {
+                "label": "winlogon.exe",
+                "color": "#2f8f6b",
+                "desc": "Manages the logon process, one per interactive session. Responsible for the Secure Attention Sequence (Ctrl+Alt+Del) and lock screen. Runs userinit.exe; its parent is the dead smss.",
+                "children": [
+                  {
+                    "label": "userinit.exe",
+                    "desc": "At logon prepares the user environment (profile, group policy, logon scripts), launches explorer.exe and exits immediately. If still running or it has children other than explorer, it is suspicious.",
+                    "children": [
+                      {
+                        "label": "explorer.exe",
+                        "desc": "The desktop shell (taskbar, Start menu, file explorer). Launched by userinit; appearing parentless is NORMAL because userinit exits. As the parent of everything the user launches by hand, it is the reference point in attacker analysis.",
+                        "children": [
+                          {
+                            "label": "powershell.exe",
+                            "desc": "Normal parent is explorer or cmd (user launches it). If running under WINWORD/EXCEL/OUTLOOK, or with args like “-enc” (base64), “-nop -w hidden”, “IEX(New-Object Net.WebClient)” → critical: macro/download attack."
+                          },
+                          {
+                            "label": "cmd.exe",
+                            "desc": "Command prompt. Normal parent is explorer. If it appears under an Office app or a web server (w3wp.exe, httpd) → macro execution or remote code execution via web shell."
+                          },
+                          {
+                            "label": "chrome.exe",
+                            "desc": "User application (browser). Child of explorer. Having its own child processes (tabs/GPU) and network connections is normal."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
   }
 ]

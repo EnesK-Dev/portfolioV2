@@ -5,11 +5,12 @@ import CheatList from '../components/CheatList.jsx'
 import Steps from '../components/Steps.jsx'
 import Concept from '../components/Concept.jsx'
 import Grouped from '../components/Grouped.jsx'
+import Tree from '../components/Tree.jsx'
 
 import { API } from '../api.js'
 
 // tip -> render bileseni eslemesi (yeni tip = yeni satir)
-const RENDERERS = { ports: PortsGrid, cheatsheet: CheatList, steps: Steps, concept: Concept, grouped: Grouped }
+const RENDERERS = { ports: PortsGrid, cheatsheet: CheatList, steps: Steps, concept: Concept, grouped: Grouped, tree: Tree }
 const ACCENTS = ['#ff5541', '#324879', '#cea72c']
 
 // Cok dilli degeri coz: {tr,en} ise secili dili dondur, degilse oldugu gibi

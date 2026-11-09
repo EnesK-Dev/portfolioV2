@@ -146,6 +146,7 @@ function NotesEditor({ token }) {
             <option value="steps">steps — numaralı adımlar [{`{title,text}`}]</option>
             <option value="concept">concept — kavram anlatımı [{`{heading,body}`}]</option>
             <option value="grouped">grouped — renkli gruplu kutular [{`{group,items:[{code,name,desc}]}`}]</option>
+            <option value="tree">tree — sürüklenir ağaç/mindmap [{`{label,desc?,children:[...]}`}]</option>
           </select>
 
           <label>İçerik (JSON) — {`{ "tr": [...], "en": [...] }`} — Claude'un verdiğini yapıştır</label>
